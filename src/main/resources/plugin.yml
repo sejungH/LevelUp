@@ -1,4 +1,25 @@
 name: LevelUp
-version: 1.0.0
+version: 0.0.1-SNAPSHOT
 author: EVa
 main: com.levelup.main.LevelUp
+api-version: 1.20
+
+commands:
+    마을:
+        description: /마을 관련 명령어
+    친구:
+        description: /친구 관련 명령어
+    입금:
+        description: /입금 관련 명령어
+    출금:
+        description: /출금 관련 명령어
+    잔고:
+        description: /잔고 관련 명령어
+    전체채팅:
+        description: 채팅 모드 변경
+    마을채팅:
+        description: 채팅 모드 변경
+    ㅊ:
+        description: 채팅 모드 변경
+    c:
+        description: 채팅 모드 변경

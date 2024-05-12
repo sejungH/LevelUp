@@ -14,6 +14,7 @@ import com.levelup.friend.FriendCommand;
 import com.levelup.friend.FriendController;
 import com.levelup.friend.FriendData;
 import com.levelup.friend.FriendTabCompleter;
+import com.levelup.menu.MenuEvent;
 import com.levelup.money.MoneyCommand;
 import com.levelup.player.PlayerCommand;
 import com.levelup.player.PlayerController;
@@ -64,7 +65,6 @@ public class LevelUp extends JavaPlugin {
 		
 		getCommand("입금").setExecutor(new MoneyCommand(this));
 		getCommand("출금").setExecutor(new MoneyCommand(this));
-		getCommand("잔고").setExecutor(new MoneyCommand(this));
 		
 		getCommand("전체채팅").setExecutor(new PlayerCommand(this));
 		getCommand("마을채팅").setExecutor(new PlayerCommand(this));
@@ -75,17 +75,16 @@ public class LevelUp extends JavaPlugin {
 	public void initEvents() {
 		PluginManager pm = getServer().getPluginManager();
 		
-		PlayerEvent playerEvent = new PlayerEvent(this);
-		pm.registerEvents(playerEvent, this);
-		this.getLogger().info("event added");
+		pm.registerEvents(new PlayerEvent(this), this);
+		pm.registerEvents(new MenuEvent(this), this);
 	}
 	
 	public void initDB() throws SQLException {
 		mysql = new MySQLConnect(this);
 		mysql.openConnection();
+		
 		players = PlayerController.getPlayers(this, mysql.getConnection());
-		System.out.println(players.toString());
 		villages = VillageController.getVillages(this, mysql.getConnection());
-		friends = FriendController.getFriends(null, mysql.getConnection());
+		friends = FriendController.getFriends(this, mysql.getConnection());
 	}
 }

@@ -10,10 +10,9 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import com.levelup.chat.ChatType;
 import com.levelup.main.LevelUp;
+import com.levelup.money.MoneyController;
 import com.levelup.player.PlayerData;
 import com.levelup.village.VillageData;
-
-import net.md_5.bungee.api.ChatColor;
 
 public class ScoreboardController {
 
@@ -34,14 +33,14 @@ public class ScoreboardController {
         // 마을
         Score village;
         if (vd == null) {
-        	village = objective.getScore("\n§e마을: §f없음");
+        	village = objective.getScore("§e마을: §f없음");
         } else {
         	village = objective.getScore("§e마을: §f" + vd.getName());
         }
         village.setScore(3);
         
         // 잔고
-        Score balance = objective.getScore("§e잔고: §f" + pd.getBalance());
+        Score balance = objective.getScore("§e잔고: §f" + MoneyController.withLargeIntegers(pd.getBalance()));
         balance.setScore(2);
         
         // 채팅
@@ -87,7 +86,7 @@ public class ScoreboardController {
         village.setScore(3);
         
         // 잔고
-        Score balance = objective.getScore("§e잔고: §f" + pd.getBalance());
+        Score balance = objective.getScore("§e잔고: §f" + MoneyController.withLargeIntegers(pd.getBalance()));
         balance.setScore(2);
         
         // 채팅

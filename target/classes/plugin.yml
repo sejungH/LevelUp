@@ -13,8 +13,6 @@ commands:
         description: /입금 관련 명령어
     출금:
         description: /출금 관련 명령어
-    잔고:
-        description: /잔고 관련 명령어
     전체채팅:
         description: 채팅 모드 변경
     마을채팅:

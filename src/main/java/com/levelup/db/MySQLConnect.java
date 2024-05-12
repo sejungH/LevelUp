@@ -13,7 +13,7 @@ public class MySQLConnect {
 	private static final String HOST = "huni1011.kro.kr";
 	private static final int PORT = 3306;
 	private static final String DATABASE = "levelup_db";
-	private static final String USERNAME = "eva";
+	private static final String USERNAME = "root";
 	private static final String PASSWORD = "huni1011";
 
 	private Connection connection;

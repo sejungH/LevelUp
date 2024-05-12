@@ -3,7 +3,6 @@ package com.levelup.player;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

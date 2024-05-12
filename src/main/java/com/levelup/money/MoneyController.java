@@ -3,6 +3,7 @@ package com.levelup.money;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -46,7 +47,9 @@ public class MoneyController {
 		return countGold * 100 + countSilver * 10 + countCopper;
 	}
 
-	public static void depoistMoeny(LevelUp plugin, Connection conn, int amount, Player player, PlayerData pd) throws SQLException {
+	public static void depoistMoeny(LevelUp plugin, Connection conn, int amount, Player player) throws SQLException {
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		
 		String sql = "UPDATE player SET balance = ? WHERE uuid = ?";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -55,7 +58,29 @@ public class MoneyController {
 		pstmt.executeUpdate();
 		pstmt.close();
 		
+		pd.setBalance(pd.getBalance() + amount);
+		
 		ScoreboardController.updateScoreboard(plugin, player);
+	}
+	
+	public static void withdrawMoeny(LevelUp plugin, Connection conn, int amount, Player player) throws SQLException {
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		String sql = "UPDATE player SET balance = ? WHERE uuid = ?";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+
+		pstmt.setInt(1, pd.getBalance() - amount);
+		pstmt.setString(2, pd.getUuid().toString());
+		pstmt.executeUpdate();
+		pstmt.close();
+		
+		pd.setBalance(pd.getBalance() - amount);
+		
+		ScoreboardController.updateScoreboard(plugin, player);
+	}
+	
+	public static String withLargeIntegers(double value) {
+	    DecimalFormat df = new DecimalFormat("###,###,###");
+	    return df.format(value);
 	}
 
 }

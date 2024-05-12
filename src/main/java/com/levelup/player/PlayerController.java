@@ -28,7 +28,6 @@ public class PlayerController {
 			OffsetDateTime dateTime = rs.getObject("last_online", OffsetDateTime.class);
 			PlayerData pd = new PlayerData(UUID.fromString(rs.getString("uuid")), rs.getString("username"),
 					rs.getInt("balance"), rs.getInt("village"), dateTime == null ? null : dateTime.toLocalDateTime());
-			System.out.println(pd.toString());
 			players.put(UUID.fromString(rs.getString("uuid")), pd);
 		}
 		

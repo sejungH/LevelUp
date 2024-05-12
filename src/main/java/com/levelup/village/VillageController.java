@@ -12,12 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
 import com.levelup.main.LevelUp;
 import com.levelup.player.PlayerData;
+import com.levelup.scoreboard.ScoreboardController;
 
 public class VillageController {
 
@@ -183,6 +186,12 @@ public class VillageController {
 				team.setPrefix("[" + villageName + "] ");
 			}
 			team.addEntry(pd.getUsername());
+			
+			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
+			if (op.isOnline()) {
+				Player player = (Player) op;
+				ScoreboardController.updateScoreboard(plugin, player);
+			}
 
 			return villageId;
 
@@ -216,6 +225,12 @@ public class VillageController {
 				team.setPrefix("[" + villageName + "] ");
 			}
 			team.addEntry(pd.getUsername());
+			
+			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
+			if (op.isOnline()) {
+				Player player = (Player) op;
+				ScoreboardController.updateScoreboard(plugin, player);
+			}
 
 			return villageName;
 
@@ -257,6 +272,12 @@ public class VillageController {
 		Team team = sb.getTeam(vd.getName());
 		if (team != null) {
 			team.removeEntry(pd.getUsername());
+		}
+		
+		OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
+		if (op.isOnline()) {
+			Player player = (Player) op;
+			ScoreboardController.updateScoreboard(plugin, player);
 		}
 
 		return vd.getName();
@@ -330,6 +351,19 @@ public class VillageController {
 		for (String entry : oldTeam.getEntries()) {
 			oldTeam.removeEntry(entry);
 			newTeam.addEntry(entry);
+		}
+		
+		for (UUID uuid : plugin.players.keySet()) {
+			PlayerData pd = plugin.players.get(uuid);
+			if (pd.getVillage() == vd.getId()) {
+				
+				OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
+				if (op.isOnline()) {
+					Player player = (Player) op;
+					ScoreboardController.updateScoreboard(plugin, player);
+				}
+				
+			}
 		}
 
 		oldTeam.unregister();

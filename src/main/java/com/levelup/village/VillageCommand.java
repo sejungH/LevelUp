@@ -328,11 +328,11 @@ public class VillageCommand implements CommandExecutor {
 					for (int id : plugin.villages.keySet()) {
 						VillageData vd = plugin.villages.get(id);
 						if (vd.getPresident() == null) {
-							sender.sendMessage(ChatColor.GOLD + " - " + vd.getName() + " [이장: 없음 / 인원: "
+							sender.sendMessage(ChatColor.GOLD + " - " + vd.getName()  + ChatColor.RESET + " [이장: 없음 / 인원: "
 									+ VillageController.countVillageMembers(plugin, vd.getName()) + "]");
 						} else {
 							PlayerData president = plugin.players.get(vd.getPresident());
-							sender.sendMessage(ChatColor.GOLD + " - " + vd.getName() + " [이장: "
+							sender.sendMessage(ChatColor.GOLD + " - " + vd.getName()  + ChatColor.RESET + " [이장: "
 									+ president.getUsername() + " / 인원: "
 									+ VillageController.countVillageMembers(plugin, vd.getName()) + "]");
 						}
@@ -350,13 +350,11 @@ public class VillageCommand implements CommandExecutor {
 					if (sender instanceof Player) {
 						Player player = (Player) sender;
 						PlayerData pd = plugin.players.get(player.getUniqueId());
-						System.out.println(plugin.players.toString());
-						System.out.println(pd.toString());
 
 						if (pd.getVillage() > 0) {
 							VillageData vd = plugin.villages.get(pd.getVillage());
 							sender.sendMessage(ChatColor.GREEN + "------------ 마을 정보 ------------");
-							sender.sendMessage(ChatColor.GOLD + "마을이름: " + vd.getName());
+							sender.sendMessage(ChatColor.GOLD + "마을이름: " + ChatColor.RESET + vd.getName());
 							sender.sendMessage(ChatColor.GOLD + "마을원:");
 
 							for (UUID u : plugin.players.keySet()) {
@@ -364,9 +362,9 @@ public class VillageCommand implements CommandExecutor {
 								if (p.getVillage() == pd.getVillage()) {
 
 									if (vd.getPresident().equals(u)) {
-										sender.sendMessage(ChatColor.GOLD + " - " + p.getUsername() + " (이장)");
+										sender.sendMessage(" - " + p.getUsername() + " (이장)");
 									} else {
-										sender.sendMessage(ChatColor.GOLD + " - " + p.getUsername());
+										sender.sendMessage(" - " + p.getUsername());
 									}
 
 								}
@@ -389,11 +387,11 @@ public class VillageCommand implements CommandExecutor {
 							VillageData vd = plugin.villages.get(villageId);
 
 							sender.sendMessage(ChatColor.GREEN + "------------ 마을 정보 ------------");
-							sender.sendMessage(ChatColor.GOLD + "마을이름: " + vd.getName());
+							sender.sendMessage(ChatColor.GOLD + "마을이름: " + ChatColor.RESET + vd.getName());
 							if (vd.getSpawn() != null) {
-								sender.sendMessage(ChatColor.GOLD + "스폰: " + Arrays.toString(vd.getSpawn()));
+								sender.sendMessage(ChatColor.GOLD + "스폰: " + ChatColor.RESET + Arrays.toString(vd.getSpawn()));
 							} else {
-								sender.sendMessage(ChatColor.GOLD + "스폰: 없음");
+								sender.sendMessage(ChatColor.GOLD + "스폰: " + ChatColor.RESET +"  없음");
 							}
 							sender.sendMessage(ChatColor.GOLD + "마을원:");
 
@@ -402,9 +400,9 @@ public class VillageCommand implements CommandExecutor {
 								if (p.getVillage() == villageId) {
 
 									if (vd.getPresident() != null && vd.getPresident().equals(u)) {
-										sender.sendMessage(ChatColor.GOLD + " - " + p.getUsername() + " (이장)");
+										sender.sendMessage(" - " + p.getUsername() + " (이장)");
 									} else {
-										sender.sendMessage(ChatColor.GOLD + " - " + p.getUsername());
+										sender.sendMessage(" - " + p.getUsername());
 									}
 
 								}

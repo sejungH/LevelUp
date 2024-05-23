@@ -57,14 +57,14 @@ public class MenuEvent implements Listener {
 			} else if (event.getView().getTitle()
 					.equals(MenuController.getInventoryTitle(MenuUnicode.BANK_DEPOSIT.val()))) {
 				bankDepositEvent(event);
-				
+
 			} else if (event.getView().getTitle()
 					.equals(MenuController.getInventoryTitle(MenuUnicode.BANK_WITHDRAW.val()))) {
 				bankWithdrawEvent(event);
 			}
 		}
 	}
-	
+
 	@EventHandler
 	public void onPlayerCloseMenu(InventoryCloseEvent event) {
 		Player player = (Player) event.getPlayer();
@@ -84,10 +84,10 @@ public class MenuEvent implements Listener {
 			}
 		}
 	}
-	
+
 	public void mainMenuEvent(InventoryClickEvent event) {
 		event.setCancelled(true);
-		
+
 		Player player = (Player) event.getWhoClicked();
 		ItemStack currItem = event.getCurrentItem();
 
@@ -104,16 +104,16 @@ public class MenuEvent implements Listener {
 		} else if (currItem.getItemMeta().getDisplayName().contains("마켓")) {
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("은행")) {
-			player.openInventory(MenuController.getBankHomeInventory(player));
+			player.openInventory(MenuController.getBankHomeInventory(plugin, player));
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("가이드북")) {
 
 		}
 	}
-	
+
 	public void bankHomeEvent(InventoryClickEvent event) {
 		event.setCancelled(true);
-		
+
 		Player player = (Player) event.getWhoClicked();
 		ItemStack currItem = event.getCurrentItem();
 
@@ -128,10 +128,10 @@ public class MenuEvent implements Listener {
 
 		}
 	}
-	
+
 	private void bankDepositEvent(InventoryClickEvent event) throws SQLException {
 		event.setCancelled(true);
-		
+
 		Player player = (Player) event.getWhoClicked();
 		ItemStack currItem = event.getCurrentItem();
 		Inventory topInv = event.getView().getTopInventory();
@@ -139,8 +139,7 @@ public class MenuEvent implements Listener {
 
 		if (event.getClickedInventory().equals(player.getInventory())) {
 
-			if (customStack != null && (customStack.getNamespacedID()
-					.equals(MoneyController.GOLD.getNamespacedID())
+			if (customStack != null && (customStack.getNamespacedID().equals(MoneyController.GOLD.getNamespacedID())
 					|| customStack.getNamespacedID().equals(MoneyController.SILVER.getNamespacedID())
 					|| customStack.getNamespacedID().equals(MoneyController.COPPER.getNamespacedID()))) {
 
@@ -150,79 +149,80 @@ public class MenuEvent implements Listener {
 					if (item == null || item.getType() == Material.AIR) {
 						topInv.setItem(MenuController.slot(1, 2 + i), currItem);
 						player.getInventory().setItem(event.getSlot(), null);
-						MenuController.updateDepositLore(topInv);
+						MoneyController.updateDepositLore(topInv);
 						break;
 					}
 				}
 			}
 
 		} else {
-			if (customStack != null && (customStack.getNamespacedID()
-					.equals(MoneyController.GOLD.getNamespacedID())
+			if (customStack != null && (customStack.getNamespacedID().equals(MoneyController.GOLD.getNamespacedID())
 					|| customStack.getNamespacedID().equals(MoneyController.SILVER.getNamespacedID())
 					|| customStack.getNamespacedID().equals(MoneyController.COPPER.getNamespacedID()))) {
-				
+
 				player.getInventory().addItem(currItem);
 				topInv.setItem(event.getSlot(), null);
-				MenuController.updateDepositLore(topInv);
+				MoneyController.updateDepositLore(topInv);
 
 			} else if (currItem.getItemMeta().getDisplayName().contains("입금하기")) {
-				
+
 				int amount = 0;
-				for (int i = 0; i < 5; i ++) {
+				for (int i = 0; i < 5; i++) {
 					ItemStack item = topInv.getItem(MenuController.slot(1, 2 + i));
 					CustomStack cs = CustomStack.byItemStack(item);
-					
+
 					if (cs != null) {
 						if (cs.getNamespacedID().equals(MoneyController.GOLD.getNamespacedID())) {
 							amount += item.getAmount() * 100;
-							
+
 						} else if (cs.getNamespacedID().equals(MoneyController.SILVER.getNamespacedID())) {
 							amount += item.getAmount() * 10;
-							
+
 						} else if (cs.getNamespacedID().equals(MoneyController.COPPER.getNamespacedID())) {
 							amount += item.getAmount();
-							
+
 						}
 					}
-					
+
 					topInv.setItem(MenuController.slot(1, 2 + i), null);
 				}
-				MoneyController.depoistMoeny(plugin, conn, amount, player);
-				player.closeInventory();
-				player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 입금했습니다.");
-				player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+				if (amount > 0) {
+					MoneyController.depoistMoeny(plugin, conn, amount, player);
+					player.closeInventory();
+					player.sendMessage(
+							ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 입금했습니다.");
+					player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+				}
 			}
 		}
 	}
 
 	private void bankWithdrawEvent(InventoryClickEvent event) {
 		event.setCancelled(true);
-		
+
 		Player player = (Player) event.getWhoClicked();
 		ItemStack currItem = event.getCurrentItem();
 		Inventory topInv = event.getView().getTopInventory();
 		PlayerData pd = plugin.players.get(player.getUniqueId());
-		
+
 		for (int i = 0; i < 10; i++) {
 			if (currItem.getItemMeta().getDisplayName().contains(Integer.toString(i))) {
-				MenuController.withdrawInput(topInv, i);
-				MenuController.updateWithdrawLore(topInv, pd);
+				MoneyController.withdrawInput(topInv, i);
+				MoneyController.updateWithdrawLore(topInv, pd);
 			}
 		}
-		
-		if (currItem.getItemMeta().getDisplayName().contains("←")) {
-			MenuController.withdrawInput(topInv, -1);
-			MenuController.updateWithdrawLore(topInv, pd);
+
+		if (currItem.getItemMeta().getDisplayName().contains("지우기")) {
+			MoneyController.withdrawInput(topInv, -1);
+			MoneyController.updateWithdrawLore(topInv, pd);
 		}
-		
+
 		if (currItem.getItemMeta().getDisplayName().contains("출금하기")) {
-			int amount = MenuController.getWithdrawAmount(topInv);
-			if (amount <= pd.getBalance()) {
+			int amount = MoneyController.getWithdrawAmount(topInv);
+			if (amount <= pd.getBalance() && amount > 0) {
 				player.performCommand("출금 " + amount);
 				player.closeInventory();
-				player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다.");
-				player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 			}
 		}
 	}

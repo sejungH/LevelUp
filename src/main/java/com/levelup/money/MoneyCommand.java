@@ -3,6 +3,7 @@ package com.levelup.money;
 import java.sql.Connection;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -114,6 +115,8 @@ public class MoneyCommand implements CommandExecutor {
 									player.getInventory().addItem(copper);
 
 									MoneyController.withdrawMoeny(plugin, conn, amount, player);
+									player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다.");
+									player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 									
 								} else {
 									sender.sendMessage(ChatColor.RED + "인벤토리에 공간이 충분하지 않습니다. 인벤토리를 비우고 다시 시도해주세요.");

@@ -1,4 +1,4 @@
-package com.levelup.village;
+	package com.levelup.village;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,23 +14,25 @@ import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-import org.bukkit.scoreboard.Team;
 
 import com.levelup.main.LevelUp;
 import com.levelup.player.PlayerData;
 import com.levelup.scoreboard.ScoreboardController;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class VillageController {
 
-	public static Map<Integer, VillageData> getVillages(LevelUp levelUp, Connection conn) throws SQLException {
+	public static Map<Integer, VillageData> getVillages(LevelUp plugin) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+		
 		String sql = "SELECT * FROM village";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
 
 		Map<Integer, VillageData> villages = new HashMap<Integer, VillageData>();
 
+		int count = 0;
 		while (rs.next()) {
 			String spawn = rs.getString("spawn");
 
@@ -46,7 +48,14 @@ public class VillageController {
 			VillageData vd = new VillageData(rs.getInt("id"), rs.getString("name"),
 					rs.getString("president") == null ? null : UUID.fromString(rs.getString("president")), arr);
 			villages.put(rs.getInt("id"), vd);
+			count++;
 		}
+		
+		rs.close();
+		pstmt.close();
+		
+		plugin.getLogger()
+		.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Village Data");
 
 		return villages;
 	}
@@ -123,11 +132,6 @@ public class VillageController {
 				VillageData vd = new VillageData(id, villageName, null, null);
 				plugin.villages.put(id, vd);
 
-				ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-				Scoreboard sb = sbmgr.getMainScoreboard();
-				Team team = sb.registerNewTeam(villageName);
-				team.setPrefix("[" + villageName + "] ");
-
 				return id;
 
 			} else {
@@ -151,12 +155,17 @@ public class VillageController {
 
 		int villageId = getVillageId(plugin, villageName);
 		plugin.villages.remove(villageId);
-
-		ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-		Scoreboard sb = sbmgr.getMainScoreboard();
-		Team team = sb.getTeam(villageName);
-		if (team != null)
-			team.unregister();
+		
+		for (UUID uuid: plugin.players.keySet()) {
+			PlayerData pd = plugin.players.get(uuid);
+			if (pd.getVillage() == villageId) {
+				OfflinePlayer op = plugin.getServer().getOfflinePlayer(uuid);
+				if (op.isOnline()) {
+					Player player = (Player) op;
+					ScoreboardController.updateScoreboard(plugin, player);
+				}
+			}
+		}
 
 		plugin.getLogger().info("마을 [" + villageName + "] 이(가) 삭제되었습니다.");
 	}
@@ -177,15 +186,6 @@ public class VillageController {
 			pstmt.close();
 
 			pd.setVillage(villageId);
-
-			ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-			Scoreboard sb = sbmgr.getMainScoreboard();
-			Team team = sb.getTeam(villageName);
-			if (team == null) {
-				team = sb.registerNewTeam(villageName);
-				team.setPrefix("[" + villageName + "] ");
-			}
-			team.addEntry(pd.getUsername());
 			
 			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
 			if (op.isOnline()) {
@@ -216,15 +216,6 @@ public class VillageController {
 			pstmt.close();
 
 			pd.setVillage(villageId);
-
-			ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-			Scoreboard sb = sbmgr.getMainScoreboard();
-			Team team = sb.getTeam(villageName);
-			if (team == null) {
-				team = sb.registerNewTeam(villageName);
-				team.setPrefix("[" + villageName + "] ");
-			}
-			team.addEntry(pd.getUsername());
 			
 			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
 			if (op.isOnline()) {
@@ -265,13 +256,6 @@ public class VillageController {
 			vd.setPresident(null);
 
 			pstmt.close();
-		}
-
-		ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-		Scoreboard sb = sbmgr.getMainScoreboard();
-		Team team = sb.getTeam(vd.getName());
-		if (team != null) {
-			team.removeEntry(pd.getUsername());
 		}
 		
 		OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
@@ -328,7 +312,6 @@ public class VillageController {
 	}
 
 	public static void renameVillage(LevelUp plugin, Connection conn, String oldName, String newName) throws SQLException {
-		// TODO Auto-generated method stub
 		int villageId = getVillageId(plugin, oldName);
 		VillageData vd = plugin.villages.get(villageId);
 		
@@ -342,17 +325,6 @@ public class VillageController {
 		plugin.getLogger().info("마을 [" + oldName + "] 이 [" + newName + "] 로 변경되었습니다.");
 		vd.setName(newName);
 		
-		ScoreboardManager sbmgr = plugin.getServer().getScoreboardManager();
-		Scoreboard sb = sbmgr.getMainScoreboard();
-		Team oldTeam = sb.getTeam(oldName);
-		Team newTeam = sb.registerNewTeam(newName);
-		newTeam.setPrefix("[" + newName + "] ");
-		
-		for (String entry : oldTeam.getEntries()) {
-			oldTeam.removeEntry(entry);
-			newTeam.addEntry(entry);
-		}
-		
 		for (UUID uuid : plugin.players.keySet()) {
 			PlayerData pd = plugin.players.get(uuid);
 			if (pd.getVillage() == vd.getId()) {
@@ -365,8 +337,6 @@ public class VillageController {
 				
 			}
 		}
-
-		oldTeam.unregister();
 	}
 
 }

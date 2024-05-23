@@ -12,9 +12,13 @@ import com.levelup.main.LevelUp;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class FriendController {
 	
-	public static List<FriendData> getFriends(LevelUp plugin, Connection conn) throws SQLException {
+	public static List<FriendData> getFriends(LevelUp plugin) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+		
 		List<FriendData> friends = new ArrayList<FriendData>();
 
 		String sql = "SELECT * FROM friend";
@@ -22,13 +26,18 @@ public class FriendController {
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
 
+		int count = 0;
 		while (rs.next()) {
 			boolean are_friends = rs.getInt("are_friends") == 0 ? false : true;
 			friends.add(new FriendData(UUID.fromString(rs.getString("from_player")), UUID.fromString(rs.getString("to_player")), are_friends));
+			count++;
 		}
 
 		rs.close();
 		pstmt.close();
+		
+		plugin.getLogger()
+		.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Friend Data");
 
 		return friends;
 	}

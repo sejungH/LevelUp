@@ -15,25 +15,38 @@ import org.bukkit.entity.Player;
 
 import com.levelup.main.LevelUp;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class PlayerController {
-	
-	public static Map<UUID, PlayerData> getPlayers(LevelUp plugin, Connection conn) throws SQLException {
+
+	public static Map<UUID, PlayerData> getPlayers(LevelUp plugin) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+
 		String sql = "SELECT * FROM player";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
-		
+
 		Map<UUID, PlayerData> players = new HashMap<UUID, PlayerData>();
-		
+
+		int count = 0;
+
 		while (rs.next()) {
 			OffsetDateTime dateTime = rs.getObject("last_online", OffsetDateTime.class);
 			PlayerData pd = new PlayerData(UUID.fromString(rs.getString("uuid")), rs.getString("username"),
 					rs.getInt("balance"), rs.getInt("village"), dateTime == null ? null : dateTime.toLocalDateTime());
 			players.put(UUID.fromString(rs.getString("uuid")), pd);
+			count++;
 		}
 		
+		rs.close();
+		pstmt.close();
+
+		plugin.getLogger()
+				.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Player Data");
+
 		return players;
 	}
-	
+
 	public static UUID getPlayerUUID(LevelUp plugin, String username) {
 		for (UUID uuid : plugin.players.keySet()) {
 			PlayerData pd = plugin.players.get(uuid);
@@ -43,43 +56,43 @@ public class PlayerController {
 		}
 		return null;
 	}
-	
+
 	public static void addPlayer(LevelUp plugin, Connection conn, Player player) throws SQLException {
 		String sql = "INSERT INTO player (uuid, username, balance, last_online) VALUES (?, ?, ?, ?)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-		
+
 		Date date = new Date();
 		Timestamp param = new Timestamp(date.getTime());
-		
+
 		pstmt.setString(1, player.getUniqueId().toString());
 		pstmt.setString(2, player.getName());
 		pstmt.setInt(3, 0);
 		pstmt.setObject(4, param);
-		
+
 		plugin.getLogger().info("새로운 유저 [" + player.getName() + "] 을(를) 데이터베이스에 추가합니다.");
-		
+
 		pstmt.executeUpdate();
 		pstmt.close();
-		
+
 		PlayerData pd = new PlayerData(player.getUniqueId(), player.getName(), 0, 0, param.toLocalDateTime());
 		plugin.players.put(player.getUniqueId(), pd);
 	}
-	
+
 	public static void updatePlayer(LevelUp plugin, Connection conn, Player player) throws SQLException {
 		String sql = "UPDATE player SET username = ? WHERE uuid = ?";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-		
+
 		pstmt.setString(1, player.getName());
 		pstmt.setString(2, player.getUniqueId().toString());
 		pstmt.executeUpdate();
 		pstmt.close();
-		
+
 		plugin.getLogger().info("유저 [" + player.getName() + "] 의 닉네임이 변경되었습니다.");
-		
+
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 		pd.setUsername(player.getName());
 	}
-	
+
 	public static void updateListOnline(LevelUp plugin, Connection conn, PlayerData pd) throws SQLException {
 		String sql = "UPDATE player SET last_online = ? WHERE uuid = ?";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -89,10 +102,10 @@ public class PlayerController {
 
 		pstmt.setObject(1, param);
 		pstmt.setString(2, pd.getUuid().toString());
-		
+
 		pstmt.executeUpdate();
 		pstmt.close();
-		
+
 		pd.setLastOnline(param.toLocalDateTime());
 	}
 
@@ -103,11 +116,11 @@ public class PlayerController {
 				return pd;
 			}
 		}
-		
+
 		return null;
 	}
-	
-	public static String getPlayerUsername(LevelUp plugin, UUID uuid)  {
+
+	public static String getPlayerUsername(LevelUp plugin, UUID uuid) {
 		PlayerData pd = plugin.players.get(uuid);
 		return pd.getUsername();
 	}

@@ -20,7 +20,7 @@ public class ScoreboardController {
 		ScoreboardManager sbm = plugin.getServer().getScoreboardManager();
 		Scoreboard scoreboard = sbm.getNewScoreboard();
 
-		Objective objective = scoreboard.registerNewObjective(player.getName(), Criteria.DUMMY, "§f⛏️ §6LEVEL §9UP §f🪓");
+		Objective objective = scoreboard.registerNewObjective(player.getName(), Criteria.DUMMY, "§f\uECAA §aLEVEL UP! §f\uECAA");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
 		// 공백
@@ -33,29 +33,29 @@ public class ScoreboardController {
         // 마을
         Score village;
         if (vd == null) {
-        	village = objective.getScore("§e마을: §f없음");
+        	village = objective.getScore("§f\uECAB §f없음");
         } else {
-        	village = objective.getScore("§e마을: §f" + vd.getName());
+        	village = objective.getScore("§f\uECAB §f" + vd.getName());
         }
         village.setScore(3);
         
         // 잔고
-        Score balance = objective.getScore("§e잔고: §f" + MoneyController.withLargeIntegers(pd.getBalance()));
+        Score balance = objective.getScore("§f\uECAC §f" + MoneyController.withLargeIntegers(pd.getBalance()));
         balance.setScore(2);
         
         // 채팅
         Score chat;
         if (pd.getChatType() == ChatType.DEFAULT) {
-        	chat = objective.getScore("§e채팅: §f전체채팅");
+        	chat = objective.getScore("§f\uECAD §f전체채팅");
         	
         } else {
-        	chat = objective.getScore("§e채팅: §f마을채팅");
+        	chat = objective.getScore("§f\uECAD §f마을채팅");
         } 
         
         chat.setScore(1);
         
         // 공백
-        Score space2 = objective.getScore("                           ");
+        Score space2 = objective.getScore("                         ");
         space2.setScore(0);
 		
 		player.setScoreboard(scoreboard);
@@ -66,7 +66,7 @@ public class ScoreboardController {
 		scoreboard.clearSlot(DisplaySlot.SIDEBAR);
 		
 		scoreboard = plugin.getServer().getScoreboardManager().getNewScoreboard();
-		Objective objective = scoreboard.registerNewObjective(player.getName(), Criteria.DUMMY, "§f⛏️ §6LEVEL §9UP §f🪓");
+		Objective objective = scoreboard.registerNewObjective(player.getName(), Criteria.DUMMY, "§f\uECAA §aLEVEL UP! §f\uECAA");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
 		// 공백
@@ -79,29 +79,29 @@ public class ScoreboardController {
         // 마을
         Score village;
         if (vd == null) {
-        	village = objective.getScore("\n§e마을: §f없음");
+        	village = objective.getScore("§f\uECAB §f없음");
         } else {
-        	village = objective.getScore("§e마을: §f" + vd.getName());
+        	village = objective.getScore("§f\uECAB §f" + vd.getName());
         }
         village.setScore(3);
         
         // 잔고
-        Score balance = objective.getScore("§e잔고: §f" + MoneyController.withLargeIntegers(pd.getBalance()));
+        Score balance = objective.getScore("§f\uECAC §f" + MoneyController.withLargeIntegers(pd.getBalance()));
         balance.setScore(2);
         
         // 채팅
         Score chat;
         if (pd.getChatType() == ChatType.DEFAULT) {
-        	chat = objective.getScore("§e채팅: §f전체채팅");
+        	chat = objective.getScore("§f\uECAD §f전체채팅");
         	
         } else {
-        	chat = objective.getScore("§e채팅: §f마을채팅");
+        	chat = objective.getScore("§f\uECAD §f마을채팅");
         } 
         
         chat.setScore(1);
         
         // 공백
-        Score space2 = objective.getScore("                           ");
+        Score space2 = objective.getScore("                         ");
         space2.setScore(0);
 		
 		player.setScoreboard(scoreboard);

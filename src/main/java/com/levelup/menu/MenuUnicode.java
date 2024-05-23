@@ -38,7 +38,11 @@ public enum MenuUnicode {
 	
 	SHOPPING_HOME('\uEBCA'),
 	
-	GUIDE_HOME('\uEBDA');
+	GUIDE_HOME('\uEBDA'),
+	
+	NPC_1('\uEBEA'),
+	NPC_2('\uEBEB'),
+	TOOLBOX('\uEBEC');
 	
 	public final char code;
 

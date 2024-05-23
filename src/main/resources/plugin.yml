@@ -5,6 +5,8 @@ main: com.levelup.main.LevelUp
 api-version: 1.20
 
 commands:
+    levelup:
+        description: /levelup reload
     마을:
         description: /마을 관련 명령어
     친구:
@@ -21,3 +23,9 @@ commands:
         description: 채팅 모드 변경
     c:
         description: 채팅 모드 변경
+    ride:
+        description: 탈것 관련 명령어
+    t:
+        description: 도구 관련 명령어
+    hat:
+        description: hat 관련 명령어

@@ -1,4 +1,4 @@
-package com.level.ride;
+package com.levelup.ride;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 

@@ -1,6 +1,5 @@
 package com.levelup.menu;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.bukkit.Material;
@@ -14,7 +13,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.money.MoneyController;
 import com.levelup.player.PlayerData;
 
@@ -24,11 +23,9 @@ import net.md_5.bungee.api.ChatColor;
 public class MenuEvent implements Listener {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public MenuEvent(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@EventHandler
@@ -188,7 +185,7 @@ public class MenuEvent implements Listener {
 				}
 
 				if (amount > 0) {
-					MoneyController.depoistMoeny(plugin, conn, amount, player);
+					MoneyController.depoistMoeny(plugin, amount, player);
 					player.closeInventory();
 					player.sendMessage(
 							ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 입금했습니다.");
@@ -206,24 +203,27 @@ public class MenuEvent implements Listener {
 		Inventory topInv = event.getView().getTopInventory();
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 
-		for (int i = 0; i < 10; i++) {
-			if (currItem.getItemMeta().getDisplayName().contains(Integer.toString(i))) {
-				MoneyController.withdrawInput(topInv, i);
+		try {
+			int number = Integer.parseInt(ChatColor.stripColor(currItem.getItemMeta().getDisplayName()));
+			if (number >= 0 && number < 10) {
+				MoneyController.withdrawInput(topInv, number);
 				MoneyController.updateWithdrawLore(topInv, pd);
 			}
-		}
 
-		if (currItem.getItemMeta().getDisplayName().contains("지우기")) {
-			MoneyController.withdrawInput(topInv, -1);
-			MoneyController.updateWithdrawLore(topInv, pd);
-		}
+		} catch (NumberFormatException e) {
+			if (currItem.getItemMeta().getDisplayName().contains("지우기")) {
+				MoneyController.withdrawInput(topInv, -1);
+				MoneyController.updateWithdrawLore(topInv, pd);
+			}
 
-		if (currItem.getItemMeta().getDisplayName().contains("출금하기")) {
-			int amount = MoneyController.getWithdrawAmount(topInv);
-			if (amount <= pd.getBalance() && amount > 0) {
-				player.performCommand("출금 " + amount);
-				player.closeInventory();
+			if (currItem.getItemMeta().getDisplayName().contains("출금하기")) {
+				int amount = MoneyController.getWithdrawAmount(topInv);
+				if (amount <= pd.getBalance() && amount > 0) {
+					player.performCommand("출금 " + amount);
+					player.closeInventory();
+				}
 			}
 		}
+
 	}
 }

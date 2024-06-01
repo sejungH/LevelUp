@@ -1,6 +1,4 @@
-package com.levelup.main;
-
-import java.sql.Connection;
+package com.levelup;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,11 +10,9 @@ import net.md_5.bungee.api.ChatColor;
 public class LevelUpCommand implements CommandExecutor {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public LevelUpCommand(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@Override
@@ -24,7 +20,7 @@ public class LevelUpCommand implements CommandExecutor {
 		try {
 			if (sender.isOp()) {
 				if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-					plugin.initDB();
+					plugin.loadDB();
 					PluginDescriptionFile pdFile = plugin.getDescription();
 					sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + pdFile.getName() + ChatColor.GREEN
 							+ "] 플러그인이 리로드 되었습니다");

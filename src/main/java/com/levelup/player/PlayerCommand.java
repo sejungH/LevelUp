@@ -1,16 +1,13 @@
 package com.levelup.player;
 
-import java.sql.Connection;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.levelup.LevelUp;
 import com.levelup.chat.ChatType;
-import com.levelup.main.LevelUp;
-import com.levelup.scoreboard.ScoreboardController;
 import com.levelup.tool.ToolController;
 
 import dev.lone.itemsadder.api.CustomStack;
@@ -19,11 +16,9 @@ import net.md_5.bungee.api.ChatColor;
 public class PlayerCommand implements CommandExecutor {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public PlayerCommand(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@Override
@@ -36,14 +31,12 @@ public class PlayerCommand implements CommandExecutor {
 				if (label.equalsIgnoreCase("전체채팅")) {
 					pd.setChatType(ChatType.DEFAULT);
 					sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다.");
-					ScoreboardController.updateScoreboard(plugin, player);
 					
 				} else if (label.equalsIgnoreCase("마을채팅")) {
 					
 					if (pd.getVillage() > 0) {
 						pd.setChatType(ChatType.VILLAGE);
 						sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다.");
-						ScoreboardController.updateScoreboard(plugin, player);
 					}
 					
 				} else if (label.equalsIgnoreCase("c") || label.equalsIgnoreCase("ㅊ")) {
@@ -53,12 +46,10 @@ public class PlayerCommand implements CommandExecutor {
 						if (pd.getChatType() == ChatType.DEFAULT) {
 							pd.setChatType(ChatType.VILLAGE);
 							sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다.");
-							ScoreboardController.updateScoreboard(plugin, player);
 							
 						} else {
 							pd.setChatType(ChatType.DEFAULT);
 							sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다.");
-							ScoreboardController.updateScoreboard(plugin, player);
 						}
 						
 					} else {

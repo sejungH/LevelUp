@@ -5,15 +5,19 @@
 	<groupId>com.levelup.mc</groupId>
 	<artifactId>LevelUp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<maven.compiler.release>22</maven.compiler.release>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>22</source>
+					<target>22</target>
 				</configuration>
+				<version>3.13.0</version>
 			</plugin>
 		</plugins>
 	</build>
@@ -31,6 +35,14 @@
 			<name>Lumine Releases</name>
 			<url>https://mvn.lumine.io/repository/maven-public/</url>
 		</repository>
+		<repository>
+			<id>OnARandomBox</id>
+			<url>https://repo.onarandombox.com/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>placeholderapi</id>
+			<url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<!--Spigot API -->
@@ -41,7 +53,7 @@
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -56,12 +68,36 @@
 			<version>3.6.1</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!--MythicMobs API -->
 		<dependency>
 			<groupId>io.lumine</groupId>
 			<artifactId>Mythic-Dist</artifactId>
 			<version>5.6.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Multiverse Core API -->
+		<dependency>
+			<groupId>com.onarandombox.multiversecore</groupId>
+			<artifactId>Multiverse-Core</artifactId>
+			<version>4.3.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Placeholder API -->
+		<dependency>
+			<groupId>me.clip</groupId>
+			<artifactId>placeholderapi</artifactId>
+			<version>2.11.6</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- CustomCrops API -->
+		<dependency>
+			<groupId>com.github.Xiao-MoMi</groupId>
+			<artifactId>Custom-Crops</artifactId>
+			<version>3.4.8</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

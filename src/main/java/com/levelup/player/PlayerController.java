@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -28,21 +28,18 @@ public class PlayerController {
 
 		Map<UUID, PlayerData> players = new HashMap<UUID, PlayerData>();
 
-		int count = 0;
-
 		while (rs.next()) {
 			OffsetDateTime dateTime = rs.getObject("last_online", OffsetDateTime.class);
 			PlayerData pd = new PlayerData(UUID.fromString(rs.getString("uuid")), rs.getString("username"),
 					rs.getInt("balance"), rs.getInt("village"), dateTime == null ? null : dateTime.toLocalDateTime());
 			players.put(UUID.fromString(rs.getString("uuid")), pd);
-			count++;
 		}
 		
 		rs.close();
 		pstmt.close();
 
-		plugin.getLogger()
-				.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Player Data");
+
+		plugin.getServer().getConsoleSender().sendMessage("[" + plugin.getName() + "] " + ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + players.size() + ChatColor.GREEN + " Player Data");
 
 		return players;
 	}

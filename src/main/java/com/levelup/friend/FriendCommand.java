@@ -10,7 +10,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 

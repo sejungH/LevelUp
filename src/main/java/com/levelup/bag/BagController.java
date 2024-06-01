@@ -1,6 +1,5 @@
-package com.level.ride;
+package com.levelup.bag;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,42 +8,41 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 
 import dev.lone.itemsadder.api.CustomStack;
 import net.md_5.bungee.api.ChatColor;
 
-public class RideController {
+public class BagController {
 
-	public static List<String> getRides() throws SQLException {
-		List<String> rides = new ArrayList<String>();
-		
+	public static List<String> getBags() {
+		List<String> bags = new ArrayList<String>();
+
 		for (String id : CustomStack.getNamespacedIdsInRegistry()) {
-//			CustomStack key = CustomStack.getInstance(id);
-			if (id.contains("_key")) {
-				rides.add(id.substring(id.indexOf(":") + 1, id.indexOf("_key")));
+			if (id.contains("bag_")) {
+				bags.add(id.substring(id.indexOf(":") + 1));
 			}
 		}
-		
-		return rides;
-	}
 
-	public static CustomStack getKey(LevelUp plugin, UUID uuid, String id) {
+		return bags;
+	}
+	
+	public static CustomStack getBag(LevelUp plugin, UUID uuid, String id) {
 		PlayerData pd = plugin.players.get(uuid);
 		
 		List<String> lore = new ArrayList<String>();
 		lore.add(ChatColor.WHITE + "소유자: " + pd.getUsername());
 		
-		CustomStack key = CustomStack.getInstance("customitems:" + id.toLowerCase() + "_key");
+		CustomStack bag = CustomStack.getInstance("customitems:" + id);
 		NamespacedKey namespacedKey = new NamespacedKey(plugin, "owner");
-		ItemMeta meta = key.getItemStack().getItemMeta();
+		ItemMeta meta = bag.getItemStack().getItemMeta();
 		meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING, uuid.toString());
 		meta.setLore(lore);
 		
-		key.getItemStack().setItemMeta(meta);
+		bag.getItemStack().setItemMeta(meta);
 		
-		return key;
+		return bag;
 	}
 
 }

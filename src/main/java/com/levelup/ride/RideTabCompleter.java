@@ -1,4 +1,4 @@
-package com.level.ride;
+package com.levelup.ride;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 
 public class RideTabCompleter implements TabCompleter {
 	

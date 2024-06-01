@@ -4,9 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,17 +13,13 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 
-import dev.lone.itemsadder.api.CustomStack;
 import net.md_5.bungee.api.ChatColor;
 
 public class ToolController {
@@ -91,6 +85,8 @@ public class ToolController {
 
 		rs.close();
 		pstmt.close();
+		
+		plugin.getServer().getConsoleSender().sendMessage("[" + plugin.getName() + "] " + ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + tools.size() + ChatColor.GREEN + " Tool Data");
 
 		return tools;
 	}
@@ -102,11 +98,6 @@ public class ToolController {
 		tool.setSword(new SwordData(player.getUniqueId(), Material.WOODEN_SWORD));
 		tool.setShovel(new ShovelData(player.getUniqueId(), Material.WOODEN_SHOVEL));
 		plugin.tools.put(player.getUniqueId(), tool);
-		
-//		player.getInventory().addItem(tool.getPickaxe().getAsItemStack(plugin));
-//		player.getInventory().addItem(tool.getAxe().getAsItemStack(plugin));
-//		player.getInventory().addItem(tool.getSword().getAsItemStack(plugin));
-//		player.getInventory().addItem(tool.getShovel().getAsItemStack(plugin));
 		
 		addTools(plugin, tool);
 	}

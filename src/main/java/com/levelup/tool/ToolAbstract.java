@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 
 import dev.lone.itemsadder.api.CustomStack;
@@ -106,7 +106,12 @@ public abstract class ToolAbstract {
 			
 		} else {
 			CustomStack customStack = CustomStack.getInstance(this.customskin);
-			tool = customStack.getItemStack().clone();
+			if (customStack != null) {
+				tool = customStack.getItemStack().clone();
+				
+			} else {
+				tool = new ItemStack(this.material);
+			}
 		}
 		
 		ItemMeta toolMeta = tool.getItemMeta();
@@ -148,7 +153,7 @@ public abstract class ToolAbstract {
 			if (custom != null)
 				return false;
 
-		} else if (!customskin.equals(custom.getNamespacedID()))
+		} else if (custom != null && !customskin.equals(custom.getNamespacedID()))
 			return false;
 
 		if (enchantment == null || enchantment.isEmpty()) {
@@ -162,8 +167,13 @@ public abstract class ToolAbstract {
 			return false;
 
 		if (name == null) {
-			if (item.getItemMeta().hasDisplayName())
-				return false;
+			if (custom == null) {
+				if (item.getItemMeta().hasDisplayName())
+					return false;
+			} else {
+				if (!custom.getDisplayName().equals(item.getItemMeta().getDisplayName()))
+					return false;
+			}
 
 		} else if (!name.equals(item.getItemMeta().getDisplayName()))
 			return false;

@@ -42,7 +42,8 @@ public enum MenuUnicode {
 	
 	NPC_1('\uEBEA'),
 	NPC_2('\uEBEB'),
-	TOOLBOX('\uEBEC');
+	NPC_3('\uEBEC'),
+	TOOLBOX('\uEBED');
 	
 	public final char code;
 

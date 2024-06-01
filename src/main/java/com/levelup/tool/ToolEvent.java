@@ -1,6 +1,5 @@
 package com.levelup.tool;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +20,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.menu.MenuController;
 import com.levelup.menu.MenuUnicode;
 
@@ -30,11 +29,9 @@ import dev.lone.itemsadder.api.CustomStack;
 public class ToolEvent implements Listener {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public ToolEvent(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@EventHandler

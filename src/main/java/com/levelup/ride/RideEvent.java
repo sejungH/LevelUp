@@ -1,4 +1,4 @@
-package com.level.ride;
+package com.levelup.ride;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -14,7 +14,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 
 import dev.lone.itemsadder.api.CustomStack;
 import io.lumine.mythic.api.mobs.MythicMob;

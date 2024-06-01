@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 
@@ -26,18 +26,15 @@ public class FriendController {
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
 
-		int count = 0;
 		while (rs.next()) {
 			boolean are_friends = rs.getInt("are_friends") == 0 ? false : true;
 			friends.add(new FriendData(UUID.fromString(rs.getString("from_player")), UUID.fromString(rs.getString("to_player")), are_friends));
-			count++;
 		}
 
 		rs.close();
 		pstmt.close();
-		
-		plugin.getLogger()
-		.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Friend Data");
+
+		plugin.getServer().getConsoleSender().sendMessage("[" + plugin.getName() + "] " + ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + friends.size() + ChatColor.GREEN + " Friend Data");
 
 		return friends;
 	}

@@ -1,4 +1,4 @@
-package com.level.npc;
+package com.levelup.npc;
 
 import org.bukkit.inventory.ItemStack;
 

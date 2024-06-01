@@ -10,7 +10,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.money.MoneyController;
 import com.levelup.player.PlayerData;
 
@@ -177,7 +177,7 @@ public class MenuController {
 
 		ItemStack depositMenu = BLANK.getItemStack().clone();
 		ItemMeta depositIM = depositMenu.getItemMeta();
-		depositIM.setDisplayName(ChatColor.RED + "입금");
+		depositIM.setDisplayName(ChatColor.of("#8AC687") + "입금");
 		depositMenu.setItemMeta(depositIM);
 		bankHomeInv.setItem(slot(4, 0), depositMenu);
 		bankHomeInv.setItem(slot(4, 1), depositMenu);
@@ -185,7 +185,7 @@ public class MenuController {
 
 		ItemStack withdrawMenu = BLANK.getItemStack().clone();
 		ItemMeta withdrawIM = withdrawMenu.getItemMeta();
-		withdrawIM.setDisplayName(ChatColor.BLUE + "출금");
+		withdrawIM.setDisplayName(ChatColor.of("#8AC687") + "출금");
 		withdrawMenu.setItemMeta(withdrawIM);
 		bankHomeInv.setItem(slot(4, 3), withdrawMenu);
 		bankHomeInv.setItem(slot(4, 4), withdrawMenu);
@@ -193,7 +193,7 @@ public class MenuController {
 
 		ItemStack taxMenu = BLANK.getItemStack().clone();
 		ItemMeta taxIM = taxMenu.getItemMeta();
-		taxIM.setDisplayName(ChatColor.GREEN + "세금");
+		taxIM.setDisplayName(ChatColor.of("#8AC687") + "세금");
 		taxMenu.setItemMeta(taxIM);
 		bankHomeInv.setItem(slot(4, 6), taxMenu);
 		bankHomeInv.setItem(slot(4, 7), taxMenu);
@@ -208,11 +208,13 @@ public class MenuController {
 
 		ItemStack depositBtn = BLANK.getItemStack().clone();
 		ItemMeta depositIM = depositBtn.getItemMeta();
-		depositIM.setDisplayName(ChatColor.RED + "입금하기");
+		depositIM.setDisplayName(ChatColor.of("#8AC687") + "입금하기");
 		depositBtn.setItemMeta(depositIM);
 		bankDepositInv.setItem(slot(4, 3), depositBtn);
 		bankDepositInv.setItem(slot(4, 4), depositBtn);
 		bankDepositInv.setItem(slot(4, 5), depositBtn);
+		
+		MoneyController.updateDepositLore(bankDepositInv);
 
 		return bankDepositInv;
 	}
@@ -296,11 +298,20 @@ public class MenuController {
 
 		ItemStack withdrawBtn = BLANK.getItemStack().clone();
 		ItemMeta withdrawIM = withdrawBtn.getItemMeta();
-		withdrawIM.setDisplayName(ChatColor.WHITE + "출금하기");
+		withdrawIM.setDisplayName(ChatColor.of("#8AC687") + "출금하기");
+		List<String> itemLore = new ArrayList<String>();
+		itemLore.add(ChatColor.WHITE + "총 0 코인을 출금합니다");
+		withdrawIM.setLore(itemLore);
 		withdrawBtn.setItemMeta(withdrawIM);
+		bankWithdrawInv.setItem(slot(2, 5), withdrawBtn);
+		bankWithdrawInv.setItem(slot(2, 6), withdrawBtn);
+		bankWithdrawInv.setItem(slot(2, 7), withdrawBtn);
 		bankWithdrawInv.setItem(slot(3, 5), withdrawBtn);
 		bankWithdrawInv.setItem(slot(3, 6), withdrawBtn);
 		bankWithdrawInv.setItem(slot(3, 7), withdrawBtn);
+		bankWithdrawInv.setItem(slot(4, 5), withdrawBtn);
+		bankWithdrawInv.setItem(slot(4, 6), withdrawBtn);
+		bankWithdrawInv.setItem(slot(4, 7), withdrawBtn);
 
 		return bankWithdrawInv;
 	}

@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 
 public class VillageTabCompleter implements TabCompleter {
 
@@ -42,6 +42,7 @@ public class VillageTabCompleter implements TabCompleter {
 						list.add("스폰");
 						list.add("정보");
 						list.add("목록");
+						list.add("신청서");
 
 					} else if (isPresident(player) > 0) {
 						list.add("가입");

@@ -1,8 +1,10 @@
 name: LevelUp
 version: 0.0.1-SNAPSHOT
 author: EVa
-main: com.levelup.main.LevelUp
+main: com.levelup.LevelUp
 api-version: 1.20
+
+softdepend: [PlaceholderAPI]
 
 commands:
     levelup:
@@ -25,7 +27,11 @@ commands:
         description: 채팅 모드 변경
     ride:
         description: 탈것 관련 명령어
+    bag:
+        description: 가방 관련 명령어
     t:
         description: 도구 관련 명령어
     hat:
         description: hat 관련 명령어
+    청크:
+        description: 청크 관련 명령어

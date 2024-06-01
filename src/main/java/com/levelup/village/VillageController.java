@@ -1,4 +1,4 @@
-	package com.levelup.village;
+package com.levelup.village;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,12 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
-import com.levelup.scoreboard.ScoreboardController;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -32,7 +28,6 @@ public class VillageController {
 
 		Map<Integer, VillageData> villages = new HashMap<Integer, VillageData>();
 
-		int count = 0;
 		while (rs.next()) {
 			String spawn = rs.getString("spawn");
 
@@ -48,14 +43,12 @@ public class VillageController {
 			VillageData vd = new VillageData(rs.getInt("id"), rs.getString("name"),
 					rs.getString("president") == null ? null : UUID.fromString(rs.getString("president")), arr);
 			villages.put(rs.getInt("id"), vd);
-			count++;
 		}
 		
 		rs.close();
 		pstmt.close();
 		
-		plugin.getLogger()
-		.info(ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + count + ChatColor.GREEN + " Village Data");
+		plugin.getServer().getConsoleSender().sendMessage("[" + plugin.getName() + "] " + ChatColor.GREEN + "Loaded " + ChatColor.YELLOW + villages.size() + ChatColor.GREEN + " Village Data");
 
 		return villages;
 	}
@@ -155,17 +148,6 @@ public class VillageController {
 
 		int villageId = getVillageId(plugin, villageName);
 		plugin.villages.remove(villageId);
-		
-		for (UUID uuid: plugin.players.keySet()) {
-			PlayerData pd = plugin.players.get(uuid);
-			if (pd.getVillage() == villageId) {
-				OfflinePlayer op = plugin.getServer().getOfflinePlayer(uuid);
-				if (op.isOnline()) {
-					Player player = (Player) op;
-					ScoreboardController.updateScoreboard(plugin, player);
-				}
-			}
-		}
 
 		plugin.getLogger().info("마을 [" + villageName + "] 이(가) 삭제되었습니다.");
 	}
@@ -186,12 +168,6 @@ public class VillageController {
 			pstmt.close();
 
 			pd.setVillage(villageId);
-			
-			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
-			if (op.isOnline()) {
-				Player player = (Player) op;
-				ScoreboardController.updateScoreboard(plugin, player);
-			}
 
 			return villageId;
 
@@ -216,12 +192,6 @@ public class VillageController {
 			pstmt.close();
 
 			pd.setVillage(villageId);
-			
-			OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
-			if (op.isOnline()) {
-				Player player = (Player) op;
-				ScoreboardController.updateScoreboard(plugin, player);
-			}
 
 			return villageName;
 
@@ -256,12 +226,6 @@ public class VillageController {
 			vd.setPresident(null);
 
 			pstmt.close();
-		}
-		
-		OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
-		if (op.isOnline()) {
-			Player player = (Player) op;
-			ScoreboardController.updateScoreboard(plugin, player);
 		}
 
 		return vd.getName();
@@ -324,19 +288,6 @@ public class VillageController {
 
 		plugin.getLogger().info("마을 [" + oldName + "] 이 [" + newName + "] 로 변경되었습니다.");
 		vd.setName(newName);
-		
-		for (UUID uuid : plugin.players.keySet()) {
-			PlayerData pd = plugin.players.get(uuid);
-			if (pd.getVillage() == vd.getId()) {
-				
-				OfflinePlayer op = plugin.getServer().getOfflinePlayer(pd.getUuid());
-				if (op.isOnline()) {
-					Player player = (Player) op;
-					ScoreboardController.updateScoreboard(plugin, player);
-				}
-				
-			}
-		}
 	}
 
 }

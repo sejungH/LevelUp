@@ -12,10 +12,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.menu.MenuController;
 import com.levelup.player.PlayerData;
-import com.levelup.scoreboard.ScoreboardController;
 
 import dev.lone.itemsadder.api.CustomStack;
 import net.md_5.bungee.api.ChatColor;
@@ -64,7 +63,9 @@ public class MoneyController {
 		return countGold * 100 + countSilver * 10 + countCopper;
 	}
 
-	public static void depoistMoeny(LevelUp plugin, Connection conn, int amount, Player player) throws SQLException {
+	public static void depoistMoeny(LevelUp plugin, int amount, Player player) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+		
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 
 		String sql = "UPDATE player SET balance = ? WHERE uuid = ?";
@@ -76,8 +77,6 @@ public class MoneyController {
 		pstmt.close();
 
 		pd.setBalance(pd.getBalance() + amount);
-
-		ScoreboardController.updateScoreboard(plugin, player);
 	}
 
 	public static void updateDepositLore(Inventory inv) {
@@ -112,7 +111,9 @@ public class MoneyController {
 		}
 	}
 
-	public static void withdrawMoeny(LevelUp plugin, Connection conn, int amount, Player player) throws SQLException {
+	public static void withdrawMoeny(LevelUp plugin, int amount, Player player) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+		
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 		String sql = "UPDATE player SET balance = ? WHERE uuid = ?";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -123,8 +124,6 @@ public class MoneyController {
 		pstmt.close();
 
 		pd.setBalance(pd.getBalance() - amount);
-
-		ScoreboardController.updateScoreboard(plugin, player);
 	}
 
 	public static String withLargeIntegers(double value) {

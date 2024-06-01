@@ -1,7 +1,5 @@
 package com.levelup.money;
 
-import java.sql.Connection;
-
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -10,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 
 import dev.lone.itemsadder.api.CustomStack;
@@ -19,11 +17,9 @@ import net.md_5.bungee.api.ChatColor;
 public class MoneyCommand implements CommandExecutor {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public MoneyCommand(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@Override
@@ -37,7 +33,7 @@ public class MoneyCommand implements CommandExecutor {
 
 					if (args.length == 0) {
 						int total = MoneyController.depositAll(plugin, player);
-						MoneyController.depoistMoeny(plugin, conn, total, player);
+						MoneyController.depoistMoeny(plugin, total, player);
 
 					} else {
 						sender.sendMessage(ChatColor.RED + "사용법: /입금");
@@ -114,7 +110,7 @@ public class MoneyCommand implements CommandExecutor {
 									copper.setAmount(amountCopper);
 									player.getInventory().addItem(copper);
 
-									MoneyController.withdrawMoeny(plugin, conn, amount, player);
+									MoneyController.withdrawMoeny(plugin, amount, player);
 									player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다.");
 									player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 									

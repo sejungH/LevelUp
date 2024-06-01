@@ -1,6 +1,5 @@
 package com.levelup.friend;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,17 +8,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 
 public class FriendTabCompleter implements TabCompleter {
 
 	private LevelUp plugin;
-	private Connection conn;
 
 	public FriendTabCompleter(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 
 	@Override

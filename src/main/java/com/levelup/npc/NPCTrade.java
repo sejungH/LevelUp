@@ -1,4 +1,4 @@
-package com.level.npc;
+package com.levelup.npc;
 
 public class NPCTrade {
 	

@@ -1,13 +1,11 @@
 package com.levelup.chat;
 
-import java.sql.Connection;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import com.levelup.main.LevelUp;
+import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 import com.levelup.village.VillageData;
 
@@ -16,11 +14,9 @@ import net.md_5.bungee.api.ChatColor;
 public class ChatEvent implements Listener {
 	
 	private LevelUp plugin;
-	private Connection conn;
 
 	public ChatEvent(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 	}
 	
 	@EventHandler

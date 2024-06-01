@@ -1,4 +1,4 @@
-package com.level.npc;
+package com.levelup.npc;
 
 import java.util.ArrayList;
 import java.util.List;

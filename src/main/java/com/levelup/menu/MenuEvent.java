@@ -101,7 +101,7 @@ public class MenuEvent implements Listener {
 		} else if (currItem.getItemMeta().getDisplayName().contains("마켓")) {
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("은행")) {
-			player.openInventory(MenuController.getBankHomeInventory(plugin, player));
+			player.openInventory(MoneyController.getBankHomeInventory(plugin, player));
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("가이드북")) {
 
@@ -115,13 +115,13 @@ public class MenuEvent implements Listener {
 		ItemStack currItem = event.getCurrentItem();
 
 		if (currItem.getItemMeta().getDisplayName().contains("입금")) {
-			player.openInventory(MenuController.getBankDepositInventory(player));
+			player.openInventory(MoneyController.getBankDepositInventory(player));
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("출금")) {
-			player.openInventory(MenuController.getBankWithdrawInventory(player));
+			player.openInventory(MoneyController.getBankWithdrawInventory(player));
 
 		} else if (currItem.getItemMeta().getDisplayName().contains("세금")) {
-			player.openInventory(MenuController.getBankTaxInventory(player));
+			player.openInventory(MoneyController.getBankTaxInventory(player));
 
 		}
 	}
@@ -185,7 +185,7 @@ public class MenuEvent implements Listener {
 				}
 
 				if (amount > 0) {
-					MoneyController.depoistMoeny(plugin, amount, player);
+					MoneyController.depoistMoeny(plugin, amount, player.getUniqueId());
 					player.closeInventory();
 					player.sendMessage(
 							ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 입금했습니다.");

@@ -1,13 +1,12 @@
 package com.levelup.tool;
 
-import java.util.UUID;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
+import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 
 import net.md_5.bungee.api.ChatColor;
@@ -26,18 +25,12 @@ public class ToolCommand implements CommandExecutor {
 			if (sender.isOp() && sender instanceof Player) {
 				Player player = (Player) sender;
 				if (args.length == 3 && args[0].equalsIgnoreCase("get")) {
-					UUID uuid = null;
-					for (UUID u : plugin.players.keySet()) {
-						PlayerData pd = plugin.players.get(u);
-						if (pd.getUsername().equalsIgnoreCase(args[2])) {
-							uuid = u;
-							break;
-						}
-					}
 					
-					if (uuid != null) {
-						if (plugin.tools.get(uuid) != null) {
-							ToolData tool = plugin.tools.get(uuid);
+					PlayerData pd = PlayerController.getPlayerData(plugin, args[2]);
+					
+					if (pd != null) {
+						if (plugin.tools.get(pd.getUuid()) != null) {
+							ToolData tool = plugin.tools.get(pd.getUuid());
 							
 							if (args[1].equalsIgnoreCase("pickaxe")) {
 								player.getInventory().addItem(tool.getPickaxe().getAsItemStack(plugin));

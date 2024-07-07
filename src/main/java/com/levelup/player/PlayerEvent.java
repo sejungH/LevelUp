@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,17 +26,23 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.levelup.LevelUp;
+import com.levelup.chat.ChatController;
 import com.levelup.scoreboard.ScoreboardController;
 import com.levelup.tool.ToolController;
 import com.levelup.tool.ToolData;
+import com.levelup.village.VillageController;
+import com.onarandombox.MultiverseCore.MultiverseCore;
+import com.onarandombox.MultiverseCore.api.MVWorldManager;
+import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 
 import dev.lone.itemsadder.api.CustomStack;
+import net.md_5.bungee.api.ChatColor;
 
 public class PlayerEvent implements Listener {
 
 	private LevelUp plugin;
 	private Connection conn;
-	
+
 	private Map<Player, List<ItemStack>> items;
 
 	public PlayerEvent(LevelUp plugin) {
@@ -51,30 +58,46 @@ public class PlayerEvent implements Listener {
 
 		if (pd == null) {
 			PlayerController.addPlayer(plugin, conn, player);
+			
+			MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager()
+					.getPlugin("Multiverse-Core");
+			MVWorldManager worldManager = core.getMVWorldManager();
+			MultiverseWorld world = worldManager.getMVWorld("tutorial");
+			Location loc = world.getCBWorld().getBlockAt(96, 66, 176).getLocation();
+			player.teleport(loc);
 
 		} else {
 			if (!player.getName().equalsIgnoreCase(pd.getUsername())) {
-				PlayerController.updatePlayer(plugin, conn, player);
+				PlayerController.updatePlayer(plugin, player);
 			}
-			PlayerController.updateListOnline(plugin, conn, pd);
+			PlayerController.updateLastOnline(plugin, player.getUniqueId());
 		}
-		
+
+		ScoreboardController.displayScoreboard(plugin, player);
+
+		VillageController.taxUpdateMessage(plugin, player);
+		PlayerController.updateListName(plugin, player);
+
+		String listHeader = "\n            "
+				+ ChatController.gradient(" LEVEL UP ", ChatColor.of("#22B14C"), ChatColor.of("#B5E61D"))
+				+ "            \n";
+		player.setPlayerListHeader(listHeader);
+
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 
 			@Override
 			public void run() {
-				ScoreboardController.displayScoreboard(plugin, player);
+				ScoreboardController.updateScoreboard(plugin, player);
+				PlayerController.updateListFooter(plugin, player);
 			}
 
 		}, 0, 20);
-
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) throws SQLException {
 		Player player = event.getPlayer();
-		PlayerData pd = plugin.players.get(player.getUniqueId());
-		PlayerController.updateListOnline(plugin, conn, pd);
+		PlayerController.updateLastOnline(plugin, player.getUniqueId());
 	}
 
 	@EventHandler
@@ -99,33 +122,33 @@ public class PlayerEvent implements Listener {
 		Player player = event.getEntity();
 		ToolData tool = plugin.tools.get(player.getUniqueId());
 		List<ItemStack> list = new ArrayList<ItemStack>(event.getDrops());
-		
+
 		for (ItemStack item : list) {
 			CustomStack custom = CustomStack.byItemStack(item);
-			
+
 			if (!items.containsKey(player))
 				items.put(player, new ArrayList<ItemStack>());
-			
+
 			if (tool.getPickaxe().equals(plugin, item) || tool.getAxe().equals(plugin, item)
 					|| tool.getSword().equals(plugin, item) || tool.getShovel().equals(plugin, item)) {
 				items.get(player).add(item);
 				event.getDrops().remove(item);
-				
+
 			} else if (custom != null) {
 				if (custom.getNamespacedID().equals(ToolController.TOOLBOX_ID)) {
 					event.getDrops().remove(item);
-					
+
 				} else if (custom.getNamespacedID().contains("_key")) {
 					items.get(player).add(item);
 					event.getDrops().remove(item);
-					
+
 				} else if (custom.getNamespacedID().contains("bag_")) {
 					items.get(player).add(item);
 					event.getDrops().remove(item);
 				}
 			}
 		}
-		
+
 	}
 
 	@EventHandler
@@ -147,22 +170,22 @@ public class PlayerEvent implements Listener {
 				Material.IRON_SHOVEL, Material.DIAMOND_PICKAXE, Material.DIAMOND_AXE, Material.DIAMOND_SWORD,
 				Material.DIAMOND_SHOVEL, Material.NETHERITE_PICKAXE, Material.NETHERITE_AXE, Material.NETHERITE_SWORD,
 				Material.NETHERITE_SHOVEL);
-		
+
 		if (event.getRecipe().getResult().getType().equals(Material.FLINT_AND_STEEL)) {
 			Inventory inv = event.getInventory();
 			List<ItemStack> items = Arrays.asList(inv.getContents());
-			
+
 			for (ItemStack item : items) {
 				CustomStack custom = CustomStack.byItemStack(item);
-				
+
 				if (custom != null) {
 					event.setCancelled(true);
 				}
 			}
-			
+
 		} else if (tool.contains(event.getRecipe().getResult().getType())) {
 			event.setCancelled(true);
-			
+
 		} else if (event.getRecipe().getResult().getType().equals(Material.ENDER_CHEST)) {
 			event.setCancelled(true);
 		}

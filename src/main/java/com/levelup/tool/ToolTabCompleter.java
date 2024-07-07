@@ -9,6 +9,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
+import com.levelup.player.PlayerController;
 
 public class ToolTabCompleter implements TabCompleter {
 
@@ -44,10 +45,7 @@ public class ToolTabCompleter implements TabCompleter {
 					
 					if (args[0].equals("get")) {
 						
-						for (Player p : plugin.getServer().getOnlinePlayers()) {
-							list.add(p.getName());
-						}
-						return list;
+						return PlayerController.getOnlinePlayerNames(plugin);
 					}
 				}
 			}

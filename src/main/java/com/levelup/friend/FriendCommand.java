@@ -57,12 +57,12 @@ public class FriendCommand implements CommandExecutor {
 							TextComponent yes = new TextComponent(ChatColor.GOLD + "" + ChatColor.BOLD + "수락");
 							yes.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("친구 신청을 수락합니다.")));
 							yes.setClickEvent(
-									new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/친구 수락 " + p.getUsername()));
+									new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/친구 수락 " + p.getName()));
 							TextComponent slash = new TextComponent(ChatColor.GREEN + " / ");
 							TextComponent no = new TextComponent(ChatColor.GOLD + "" + ChatColor.BOLD + "거절");
 							no.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("친구 신청을 거절합니다.")));
 							no.setClickEvent(
-									new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/친구 거절 " + p.getUsername()));
+									new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/친구 거절 " + p.getName()));
 							TextComponent close = new TextComponent(ChatColor.GREEN + " ]");
 
 							player.spigot().sendMessage(new TextComponent(playerName, yes, slash, no, close));
@@ -77,14 +77,12 @@ public class FriendCommand implements CommandExecutor {
 				} else if (args[0].equalsIgnoreCase("신청")) {
 
 					if (args.length == 2) {
-						if (args[1].equalsIgnoreCase(player.getName())) {
-							sender.sendMessage(ChatColor.RED + "자신에게는 친구 신청을 할 수 없습니다.");
+						PlayerData pd = PlayerController.getPlayerData(plugin, args[1]);
 
-						} else {
-							PlayerData pd = PlayerController.getPlayerData(plugin, args[1]);
+						if (pd != null) {
 
-							if (pd == null) {
-								sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다.");
+							if (pd.getUuid().equals(player.getUniqueId())) {
+								sender.sendMessage(ChatColor.RED + "자신에게는 친구 신청을 할 수 없습니다.");
 
 							} else {
 								FriendData fd = FriendController.getFriendship(plugin, player.getName(), args[1]);
@@ -97,10 +95,12 @@ public class FriendCommand implements CommandExecutor {
 									OfflinePlayer p = plugin.getServer().getOfflinePlayer(pd.getUuid());
 									if (p.isOnline()) {
 										Player pp = (Player) p;
-										pp.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + player.getName()
+										PlayerData senderPD = plugin.players.get(player.getUniqueId());
+										pp.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + senderPD.getName()
 												+ ChatColor.GREEN + "] 님이 친구 신청을 보냈습니다.");
 										pp.playSound(pp, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 									}
+
 								} else {
 									if (fd.areFriends()) {
 										sender.sendMessage(ChatColor.RED + "이미 [" + args[1] + "] 님과 친구입니다.");
@@ -109,6 +109,8 @@ public class FriendCommand implements CommandExecutor {
 									}
 								}
 							}
+						} else {
+							sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다.");
 						}
 
 					} else {
@@ -205,7 +207,7 @@ public class FriendCommand implements CommandExecutor {
 					sender.sendMessage(ChatColor.GREEN + "------------- 친구 목록 ------------");
 
 					for (PlayerData p : friends) {
-						sender.sendMessage(ChatColor.GOLD + " - " + p.getUsername());
+						sender.sendMessage(ChatColor.GOLD + " - " + p.getName());
 					}
 
 					sender.sendMessage(ChatColor.GREEN + "--------------------------------");
@@ -218,7 +220,9 @@ public class FriendCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다.");
 			}
 
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			e.printStackTrace();
 			return false;
 		}

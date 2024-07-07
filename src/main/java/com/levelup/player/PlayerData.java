@@ -2,21 +2,27 @@ package com.levelup.player;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.levelup.chat.ChatType;
 
 public class PlayerData {
+	
+	private final String PATTERN = "<(.+)>(.+)</(.+)>";
 
 	private UUID uuid;
 	private String username;
+	private String nickname;
 	private int balance;
 	private int village;
 	private LocalDateTime lastOnline;
 	private ChatType chatType;
 
-	public PlayerData(UUID uuid, String username, int balance, int village, LocalDateTime lastOnline) {
+	public PlayerData(UUID uuid, String username, String nickname, int balance, int village, LocalDateTime lastOnline) {
 		this.uuid = uuid;
 		this.username = username;
+		this.nickname = nickname;
 		this.balance = balance;
 		this.village = village;
 		this.lastOnline = lastOnline;
@@ -39,6 +45,14 @@ public class PlayerData {
 		this.username = username;
 	}
 
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
 	public int getBalance() {
 		return balance;
 	}
@@ -54,11 +68,11 @@ public class PlayerData {
 	public void setVillage(int village) {
 		this.village = village;
 	}
-	
+
 	public LocalDateTime getLastOnline() {
 		return lastOnline;
 	}
-	
+
 	public void setLastOnline(LocalDateTime lastOnline) {
 		this.lastOnline = lastOnline;
 	}
@@ -71,10 +85,42 @@ public class PlayerData {
 		this.chatType = chatType;
 	}
 
+	public String getName() {
+		if (this.nickname == null) {
+			return this.username;
+		} else {
+			return this.getNicknameWithoutColor();
+		}
+	}
+	
+	public String getNicknameColor() {
+		if (this.nickname != null) {
+			Pattern pattern = Pattern.compile(PATTERN);
+			Matcher matcher = pattern.matcher(this.nickname);
+			if (matcher.find()) {
+				return matcher.group(1);
+			}
+		}
+		
+		return null;
+	}
+	
+	public String getNicknameWithoutColor() {
+		if (this.nickname != null) {
+			Pattern pattern = Pattern.compile(PATTERN);
+			Matcher matcher = pattern.matcher(this.nickname);
+			if (matcher.find()) {
+				return matcher.group(2);
+			}
+		}
+		
+		return this.nickname;
+	}
+
 	@Override
 	public String toString() {
-		return "PlayerData [uuid=" + uuid + ", username=" + username + ", balance=" + balance + ", village=" + village
-				+ ", lastOnline=" + lastOnline + "]";
+		return "PlayerData [uuid=" + uuid + ", username=" + username + ", nickname=" + nickname + ", balance=" + balance
+				+ ", village=" + village + ", lastOnline=" + lastOnline + "]";
 	}
 
 }

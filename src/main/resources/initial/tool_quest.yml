@@ -1,0 +1,308 @@
+pickaxe:
+  wood_pickaxe:
+    - level: 0
+      exp: 10
+      required: 1
+      quest:
+      - material: cobblestone
+        quantity: 10
+
+  stone_pickaxe:
+    - level: 0
+      exp: 50
+      required: 1
+      quest:
+      - material: raw_iron
+        quantity: 8
+      - material: coal
+        quantity: 16
+      - material: cobblestone
+        quantity: 64
+
+  iron_pickaxe:
+    - level: 0
+      exp: 500
+      required: 1
+      quest:
+      - material: iron_ingot
+        quantity: 16
+      - material: gold_ingot
+        quantity: 8
+      - material: lapis_lazuli
+        quantity: 16
+      - material: coal
+        quantity: 32
+      - material: cobblestone
+        quantity: 128
+    - level: 1
+      exp: 1500
+      required: 1
+      quest:
+      - material: iron_ingot
+        quantity: 16
+      - material: gold_ingot
+        quantity: 8
+      - material: lapis_lazuli
+        quantity: 24
+      - material: redstone
+        quantity: 24
+      - material: coal
+        quantity: 32
+      - material: cobblestone
+        quantity: 192
+    - level: 2
+      exp: 3000
+      required: 1
+      quest:
+      - material: iron_ingot
+        quantity: 24
+      - material: gold_ingot
+        quantity: 12
+      - material: lapis_lazuli
+        quantity: 32
+      - material: redstone
+        quantity: 32
+      - material: coal
+        quantity: 48
+      - material: cobblestone
+        quantity: 256
+    - level: 3
+      exp: 5000
+      required: 1
+      quest:
+      - material: iron_ingot
+        quantity: 32
+      - material: gold_ingot
+        quantity: 24
+      - material: lapis_lazuli
+        quantity: 48
+      - material: redstone
+        quantity: 48
+      - material: coal
+        quantity: 64
+      - material: diamond
+        quantity: 8
+      - material: cobbled_deepslate
+        quantity: 256
+    - level: 4
+      exp: 20000
+      required: 1
+      quest:
+      - material: iron_ingot
+        quantity: 48
+      - material: gold_ingot
+        quantity: 32
+      - material: lapis_lazuli
+        quantity: 64
+      - material: redstone
+        quantity: 64
+      - material: coal_block
+        quantity: 16
+      - material: diamond
+        quantity: 16
+      - material: cobbled_deepslate
+        quantity: 512
+        
+  diamond_pickaxe:
+    - level: 0
+      exp: 40000
+      required: 1
+      quest:
+      - material: iron_block
+        quantity: 8
+      - material: gold_block
+        quantity: 6
+      - material: lapis_block
+        quantity: 16
+      - material: redstone_block
+        quantity: 16
+      - material: diamond
+        quantity: 32
+      - material: cobbled_deepslate
+        quantity: 640
+    - level: 1
+      exp: 80000
+      required: 1
+      quest:
+      - material: iron_block
+        quantity: 16
+      - material: gold_block
+        quantity: 12
+      - material: lapis_block
+        quantity: 32
+      - material: redstone_block
+        quantity: 32
+      - material: diamond_block
+        quantity: 8
+      - material: cobbled_deepslate
+        quantity: 960
+    - level: 2
+      exp: 160000
+      required: 2
+      quest:
+      - material: iron_block
+        quantity: 16
+      - material: gold_block
+        quantity: 12
+      - material: lapis_block
+        quantity: 32
+      - material: redstone_block
+        quantity: 32
+      - material: diamond_block
+        quantity: 8
+      - material: cobbled_deepslate
+        quantity: 960
+    - level: 3
+      exp: 320000
+      required: 2
+      quest:
+      - material: iron_block
+        quantity: 24
+      - material: gold_block
+        quantity: 16
+      - material: lapis_block
+        quantity: 48
+      - material: redstone_block
+        quantity: 48
+      - material: diamond_block
+        quantity: 12
+      - material: cobbled_deepslate
+        quantity: 1280
+    - level: 4
+      exp: 1000000
+      required: 5
+      quest:
+      - material: iron_block
+        quantity: 32
+      - material: gold_block
+        quantity: 32
+      - material: lapis_block
+        quantity: 48
+      - material: redstone_block
+        quantity: 48
+      - material: diamond_block
+        quantity: 32
+
+  netherite_pickaxe:
+    - level: 0
+      exp: 2000000
+      required: 5
+      quest:
+      - material: iron_block
+        quantity: 64
+      - material: gold_block
+        quantity: 64
+      - material: lapis_block
+        quantity: 64
+      - material: redstone_block
+        quantity: 64
+      - material: diamond_block
+        quantity: 64
+        
+shovel:
+  wood_shovel:
+    - level: 0
+      exp: 20
+      required: 1
+      quest:
+      - material: dirt
+        quantity: 10
+
+  stone_shovel:
+    - level: 0
+      exp: 50
+      required: 1
+      quest:
+      - material: dirt
+        quantity: 16
+      - material: gravel
+        quantity: 16
+      - material: sand
+        quantity: 16
+
+  iron_shovel:
+    - level: 0
+      exp: 75
+      required: 1
+      quest:
+      - material: dirt
+        quantity: 24
+      - material: gravel
+        quantity: 24
+      - material: sand
+        quantity: 24
+      - material: clay
+        quantity: 24
+    - level: 1
+      exp: 100
+      required: 1
+      quest:
+      - material: dirt
+        quantity: 32
+      - material: gravel
+        quantity: 32
+      - material: sand
+        quantity: 32
+      - material: clay
+        quantity: 32
+
+  diamond_shovel:
+    - level: 0
+      exp: 200
+      required: 2
+      quest:
+      - material: dirt
+        quantity: 64
+      - material: white_concrete_powder
+        quantity: 16
+      - material: glass
+        quantity: 32
+      - material: terracotta
+        quantity: 16
+      - material: snow_block
+        quantity: 32
+    - level: 1
+      exp: 600
+      required: 2
+      quest:
+      - material: dirt
+        quantity: 64
+      - material: white_concrete_powder
+        quantity: 32
+      - material: glass
+        quantity: 64
+      - material: terracotta
+        quantity: 32
+      - material: snow_block
+        quantity: 64
+    - level: 2
+      exp: 1000
+      required: 5
+      quest:
+      - material: dirt
+        quantity: 64
+      - material: white_concrete_powder
+        quantity: 32
+      - material: glass
+        quantity: 64
+      - material: terracotta
+        quantity: 32
+      - material: snow_block
+        quantity: 64
+
+  netherite_shovel:
+    - level: 0
+      exp: 2000
+      required: 5
+      quest:
+      - material: dirt
+        quantity: 64
+      - material: white_concrete_powder
+        quantity: 64
+      - material: glass
+        quantity: 64
+      - material: terracotta
+        quantity: 64
+      - material: snow_block
+        quantity: 64
+        

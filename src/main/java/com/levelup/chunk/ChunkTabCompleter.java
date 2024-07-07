@@ -9,6 +9,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
+import com.levelup.player.PlayerController;
 
 public class ChunkTabCompleter implements TabCompleter {
 	
@@ -35,19 +36,11 @@ public class ChunkTabCompleter implements TabCompleter {
 			} else if (args.length == 2 && sender.isOp()) {
 				if (args[0].equalsIgnoreCase("확인") && sender instanceof Player) {
 					
-					for (Player p : plugin.getServer().getOnlinePlayers()) {
-						list.add(p.getName());
-					}
-					
-					return list;
+					return PlayerController.getOnlinePlayerNames(plugin);
 					
 				} else if (args[0].equalsIgnoreCase("목록")) {
 					
-					for (Player p : plugin.getServer().getOnlinePlayers()) {
-						list.add(p.getName());
-					}
-					
-					return list;
+					return PlayerController.getOnlinePlayerNames(plugin);
 				}
 			}
 			

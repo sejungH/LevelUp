@@ -33,7 +33,7 @@ public class MoneyCommand implements CommandExecutor {
 
 					if (args.length == 0) {
 						int total = MoneyController.depositAll(plugin, player);
-						MoneyController.depoistMoeny(plugin, total, player);
+						MoneyController.depoistMoeny(plugin, total, player.getUniqueId());
 
 					} else {
 						sender.sendMessage(ChatColor.RED + "사용법: /입금");
@@ -110,7 +110,7 @@ public class MoneyCommand implements CommandExecutor {
 									copper.setAmount(amountCopper);
 									player.getInventory().addItem(copper);
 
-									MoneyController.withdrawMoeny(plugin, amount, player);
+									MoneyController.withdrawMoeny(plugin, amount, player.getUniqueId());
 									player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다.");
 									player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 									

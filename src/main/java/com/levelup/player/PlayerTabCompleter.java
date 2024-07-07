@@ -1,4 +1,4 @@
-package com.levelup.bag;
+package com.levelup.player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,47 +9,34 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
-import com.levelup.player.PlayerController;
 
-public class BagTabCompleter implements TabCompleter {
-	
+public class PlayerTabCompleter implements TabCompleter {
+
 	private LevelUp plugin;
-	
-	public BagTabCompleter(LevelUp plugin) {
+
+	public PlayerTabCompleter(LevelUp plugin) {
 		this.plugin = plugin;
 	}
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 		List<String> list = new ArrayList<String>();
-		
+
 		try {
-			if (sender instanceof Player) {
-				
+			if (sender.isOp()) {
 				if (args.length == 1) {
-					list.add("get");
+					
+					for (Player p : plugin.getServer().getOnlinePlayers()) {
+						list.add(p.getName());
+					}
 					
 					return list;
-					
-				} else if (args.length == 2) {
-					
-					if (args[0].equalsIgnoreCase("get")) {
-						return BagController.getBags();
-					}
-					
-				} else if (args.length == 3) {
-					
-					if (args[0].equalsIgnoreCase("get")) {
-						
-						return PlayerController.getOnlinePlayerNames(plugin);
-					}
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return list;
 	}
 

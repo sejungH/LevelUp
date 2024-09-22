@@ -32,7 +32,7 @@ public class BagController {
 		PlayerData pd = plugin.players.get(uuid);
 		
 		List<String> lore = new ArrayList<String>();
-		lore.add(ChatColor.WHITE + "소유자: " + pd.getUsername());
+		lore.add(ChatColor.GRAY + "소유자: " + pd.getUsername());
 		
 		CustomStack bag = CustomStack.getInstance("customitems:" + id);
 		NamespacedKey namespacedKey = new NamespacedKey(plugin, "owner");

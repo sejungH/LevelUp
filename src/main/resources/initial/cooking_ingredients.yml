@@ -1,0 +1,98 @@
+vegetables:
+  - material: "potato"
+    namespacedID: null
+  - material: "carrot"
+    namespacedID: null
+  - material: "beetroot"
+    namespacedID: null
+  - material: "wheat"
+    namespacedID: null
+  - material: null
+    namespacedID: "customcrops:corn"
+  - material: null
+    namespacedID: "customcrops:hop"
+  - material: null
+    namespacedID: "customcrops:cabbage"
+  - material: null
+    namespacedID: "customcrops:pepper"
+  - material: null
+    namespacedID: "customcrops:eggplant"
+  - material: null
+    namespacedID: "customcrops:chinese_cabbage"
+  - material: null
+    namespacedID: "customcrops:tomato"
+  - material: null
+    namespacedID: "customcrops:garlic"
+
+fruits:
+  - material: "melon_slice"
+    namespacedID: null
+  - material: "sweet_berries"
+    namespacedID: null
+  - material: "glow_berries"
+    namespacedID: null
+  - material: "apple"
+    namespacedID: null
+  - material: null
+    namespacedID: "customcrops:grape"
+  - material: null
+    namespacedID: "customcrops:pineapple"
+  - material: null
+    namespacedID: "customcrops:pitaya"
+
+meats:
+  - material: "beef"
+    namespacedID: null
+  - material: "porkchop"
+    namespacedID: null
+  - material: "mutton"
+    namespacedID: null
+  - material: "chicken"
+    namespacedID: null
+  - material: "rabbit"
+    namespacedID: null
+
+fishes:
+  - material: "cod"
+    namespacedID: null
+  - material: "salmon"
+    namespacedID: null
+  - material: "tropical_fish"
+    namespacedID: null
+  - material: "pufferfish"
+    namespacedID: null
+  - material: null
+    namespacedID: "customfishing:tuna_fish"
+  - material: null
+    namespacedID: "customfishing:pike_fish"
+  - material: null
+    namespacedID: "customfishing:gold_fish"
+  - material: null
+    namespacedID: "customfishing:perch_fish"
+  - material: null
+    namespacedID: "customfishing:mullet_fish"
+  - material: null
+    namespacedID: "customfishing:sardine_fish"
+  - material: null
+    namespacedID: "customfishing:carp_fish"
+  - material: null
+    namespacedID: "customfishing:cat_fish"
+  - material: null
+    namespacedID: "customfishing:octopus_fish"
+  - material: null
+    namespacedID: "customfishing:sunfish_fish"
+  - material: null
+    namespacedID: "customfishing:red_spnapper_fish"
+  - material: null
+    namespacedID: "customfishing:salmon_void_fish"
+  - material: null
+    namespacedID: "customfishing:woodskip_fish"
+  - material: null
+    namespacedID: "customfishing:sturgeon_fish"
+  - material: null
+    namespacedID: "customfishing:blue_jellyfish"
+  - material: null
+    namespacedID: "customfishing:pink_jellyfish"
+  - material: null
+    namespacedID: "customfishing:squid_fish"
+  

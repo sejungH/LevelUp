@@ -21,6 +21,7 @@ public class LevelUpCommand implements CommandExecutor {
 			if (sender.isOp()) {
 				if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 					plugin.loadDB();
+					plugin.loadConfig();
 					PluginDescriptionFile pdFile = plugin.getDescription();
 					sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + pdFile.getName() + ChatColor.GREEN
 							+ "] 플러그인이 리로드 되었습니다");

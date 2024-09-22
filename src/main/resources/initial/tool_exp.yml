@@ -1,0 +1,87 @@
+pickaxe:
+  - material: stone
+    exp: 1
+  - material: deepslate
+    exp: 1
+  - material: coal_ore
+    exp: 2
+  - material: iron_ore
+    exp: 5
+  - material: deepslate_iron_ore
+    exp: 5
+  - material: redstone_ore
+    exp: 3
+  - material: deepslate_redstone_ore
+    exp: 3
+  - material: lapis_ore
+    exp: 3
+  - material: deepslate_lapis_ore
+    exp: 3
+  - material: gold_ore
+    exp: 10
+  - material: deepslate_gold_ore
+    exp: 10
+  - material: diamond_ore
+    exp: 20
+  - material: deepslate_diamond_ore
+    exp: 20
+  - material: emerald_ore
+    exp: 40
+  - material: deepslate_emerald_ore
+    exp: 40
+  - material: nether_gold_ore
+    exp: 2
+  - material: nether_quartz_ore
+    exp: 2
+  - material: glowstone
+    exp: 3
+  - material: ancient_debris
+    exp: 40
+
+axe:
+  - material: oak_log
+    exp: 10
+  - material: birch_log
+    exp: 10
+  - material: spruce_log
+    exp: 10
+  - material: dark_oak_log
+    exp: 10
+  - material: acacia_log
+    exp: 10
+  - material: jungle_log
+    exp: 10
+  - material: mangrove_log
+    exp: 10
+  - material: cherry_log
+    exp: 10
+  - material: crimson_stem
+    exp: 10
+  - material: warped_stem
+    exp: 10
+  - material: pumpkin
+    exp: 2
+  - material: melon
+    exp: 2
+
+shovel:
+  - material: grass_block
+    exp: 2
+  - material: dirt
+    exp: 2
+  - material: gravel
+    exp: 2
+  - material: sand
+    exp: 2
+  - material: clay
+    exp: 4
+  - material: mud
+    exp: 4
+  - material: red_sand
+    exp: 4
+  - material: snow
+    exp: 1
+  - material: soul_sand
+    exp: 2
+  - material: soul_soil
+    exp: 2

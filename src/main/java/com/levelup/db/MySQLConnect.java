@@ -3,6 +3,7 @@ package com.levelup.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,16 +26,14 @@ public class MySQLConnect {
 	public int openConnection() {
 		try {
 			if (connection != null && !connection.isClosed()) {
-				plugin.getLogger().warning("데이터베이스 연결에 실패했습니다.");
-				return 1;
+				return 0; // 이미 연결되어 있음
 			}
 
 			synchronized (this) {
 				if (connection != null && !connection.isClosed()) {
-					plugin.getLogger().warning("데이터베이스 연결에 실패했습니다.");
-					return 1;
+					return 0; // 이미 연결되어 있음
 				}
-				Class.forName("com.mysql.jdbc.Driver");
+				Class.forName("com.mysql.cj.jdbc.Driver");
 				connection = DriverManager.getConnection(
 						"jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE + "?autoReconnect=true", USERNAME,
 						PASSWORD);
@@ -42,14 +41,28 @@ public class MySQLConnect {
 				return 0;
 			}
 		} catch (Exception e) {
-			plugin.getLogger().warning("데이터베이스 연결에 실패했습니다.");
+            plugin.getLogger().warning("데이터베이스 연결에 실패했습니다: " + e.getMessage());
 			e.printStackTrace();
 			return 1;
 		}
 	}
 	
 	public Connection getConnection() {
-		return this.connection;
+		try {
+			if (connection == null || connection.isClosed()) {
+				this.openConnection();
+			}
+			if (!isConnectionAlive()) {
+				this.closeConnection();
+				this.openConnection();
+			}
+			return this.connection;
+			
+		} catch (SQLException e) {
+			plugin.getLogger().warning("데이터베이스 연결을 확인하는 중 오류가 발생했습니다: " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public int closeConnection() {
@@ -62,6 +75,17 @@ public class MySQLConnect {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return 1;
+		}
+	}
+	
+	public boolean isConnectionAlive() {
+		try (Statement stmt = connection.createStatement()) {
+			stmt.executeQuery("SELECT 1");
+			return true;
+			
+		} catch (SQLException e) {
+			plugin.getLogger().warning("데이터베이스 연결 상태를 확인할 수 없습니다: " + e.getMessage());
+			return false;
 		}
 	}
 }

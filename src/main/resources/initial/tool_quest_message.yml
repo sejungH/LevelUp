@@ -1,0 +1,263 @@
+pickaxe:
+  wooden_pickaxe:
+    - level: 0
+      quest:
+        - "(나무 곡괭이 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(나무 곡괭이 레벨 0 퀘스트 완료)"
+
+  stone_pickaxe:
+    - level: 0
+      quest:
+        - "(돌 곡괭이 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(돌 곡괭이 레벨 0 퀘스트 완료)"
+
+  iron_pickaxe:
+    - level: 0
+      quest:
+        - "(철 곡괭이 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(철 곡괭이 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(철 곡괭이 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(철 곡괭이 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(철 곡괭이 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(철 곡괭이 레벨 2 퀘스트 완료)"
+    - level: 3
+      quest:
+        - "(철 곡괭이 레벨 3 퀘스트 메세지)"
+      complete:
+        - "(철 곡괭이 레벨 3 퀘스트 완료)"
+    - level: 4
+      quest:
+        - "(철 곡괭이 레벨 4 퀘스트 메세지)"
+      complete:
+        - "(철 곡괭이 레벨 4 퀘스트 완료)"
+
+  diamond_pickaxe:
+    - level: 0
+      quest:
+        - "(다이아몬드 곡괭이 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 곡괭이 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(다이아몬드 곡괭이 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 곡괭이 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(다이아몬드 곡괭이 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 곡괭이 레벨 2 퀘스트 완료)"
+    - level: 3
+      quest:
+        - "(다이아몬드 곡괭이 레벨 3 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 곡괭이 레벨 3 퀘스트 완료)"
+    - level: 4
+      quest:
+        - "(다이아몬드 곡괭이 레벨 4 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 곡괭이 레벨 4 퀘스트 완료)"
+
+  netherite_pickaxe:
+    - level: 0
+      quest:
+        - "(네더라이트 곡괭이 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(네더라이트 곡괭이 레벨 0 퀘스트 완료)"
+
+axe:
+  wooden_axe:
+    - level: 0
+      quest:
+        - "(나무 도끼 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(나무 도끼 레벨 0 퀘스트 완료)"
+
+  stone_axe:
+    - level: 0
+      quest:
+        - "(돌 도끼 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(돌 도끼 레벨 0 퀘스트 완료)"
+
+  iron_axe:
+    - level: 0
+      quest:
+        - "(철 도끼 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(철 도끼 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(철 도끼 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(철 도끼 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(철 도끼 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(철 도끼 레벨 2 퀘스트 완료)"
+    - level: 3
+      quest:
+        - "(철 도끼 레벨 3 퀘스트 메세지)"
+      complete:
+        - "(철 도끼 레벨 3 퀘스트 완료)"
+    - level: 4
+      quest:
+        - "(철 도끼 레벨 4 퀘스트 메세지)"
+      complete:
+        - "(철 도끼 레벨 4 퀘스트 완료)"
+
+  diamond_axe:
+    - level: 0
+      quest:
+        - "(다이아몬드 도끼 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 도끼 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(다이아몬드 도끼 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 도끼 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(다이아몬드 도끼 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 도끼 레벨 2 퀘스트 완료)"
+    - level: 3
+      quest:
+        - "(다이아몬드 도끼 레벨 3 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 도끼 레벨 3 퀘스트 완료)"
+    - level: 4
+      quest:
+        - "(다이아몬드 도끼 레벨 4 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 도끼 레벨 4 퀘스트 완료)"
+
+  netherite_axe:
+    - level: 0
+      quest:
+        - "(네더라이트 도끼 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(네더라이트 도끼 레벨 0 퀘스트 완료)"
+
+sword:
+  wooden_sword:
+    - level: 0
+      quest:
+        - "(나무 검 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(나무 검 레벨 0 퀘스트 완료)"
+
+  stone_sword:
+    - level: 0
+      quest:
+        - "(돌 검 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(돌 검 레벨 0 퀘스트 완료)"
+
+  iron_sword:
+    - level: 0
+      quest:
+        - "(철 검 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(철 검 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(철 검 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(철 검 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(철 검 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(철 검 레벨 2 퀘스트 완료)"
+    - level: 3
+      quest:
+        - "(철 검 레벨 3 퀘스트 메세지)"
+      complete:
+        - "(철 검 레벨 3 퀘스트 완료)"
+
+  diamond_sword:
+    - level: 0
+      quest:
+        - "(다이아몬드 검 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 검 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(다이아몬드 검 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 검 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(다이아몬드 검 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 검 레벨 2 퀘스트 완료)"
+
+  netherite_sword:
+    - level: 0
+      quest:
+        - "(네더라이트 검 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(네더라이트 검 레벨 0 퀘스트 완료)"
+
+shovel:
+  wooden_shovel:
+    - level: 0
+      quest:
+        - "(나무 삽 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(나무 삽 레벨 0 퀘스트 완료)"
+
+  stone_shovel:
+    - level: 0
+      quest:
+        - "(돌 삽 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(돌 삽 레벨 0 퀘스트 완료)"
+
+  iron_shovel:
+    - level: 0
+      quest:
+        - "(철 삽 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(철 삽 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(철 삽 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(철 삽 레벨 1 퀘스트 완료)"
+
+  diamond_shovel:
+    - level: 0
+      quest:
+        - "(다이아몬드 삽 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 삽 레벨 0 퀘스트 완료)"
+    - level: 1
+      quest:
+        - "(다이아몬드 삽 레벨 1 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 삽 레벨 1 퀘스트 완료)"
+    - level: 2
+      quest:
+        - "(다이아몬드 삽 레벨 2 퀘스트 메세지)"
+      complete:
+        - "(다이아몬드 삽 레벨 2 퀘스트 완료)"
+
+  netherite_shovel:
+    - level: 0
+      quest:
+        - "(네더라이트 삽 레벨 0 퀘스트 메세지)"
+      complete:
+        - "(네더라이트 삽 레벨 0 퀘스트 완료)"

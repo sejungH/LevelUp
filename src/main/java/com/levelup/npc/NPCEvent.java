@@ -9,27 +9,33 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.persistence.PersistentDataType;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.levelup.LevelUp;
+import com.levelup.LevelUpItem;
 import com.levelup.menu.MenuController;
 import com.levelup.menu.MenuUnicode;
 
-import dev.lone.itemsadder.api.CustomStack;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.core.mobs.ActiveMob;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
 
 public class NPCEvent implements Listener {
 
@@ -42,33 +48,34 @@ public class NPCEvent implements Listener {
 	}
 
 	@EventHandler
-	public void onNPCDeath(EntityDeathEvent event) throws SQLException {
-		Entity entity = event.getEntity();
-
-		if (MythicBukkit.inst().getMobManager().isMythicMob(entity)) {
-			UUID uuid = entity.getUniqueId();
-			NPCController.deleteNPC(plugin, uuid);
-			npcInv.remove(uuid);
-		}
-	}
-
-	@EventHandler
-	public void onPlayerRightClick(PlayerInteractEntityEvent event) {
+	public void onPlayerRightClick(PlayerInteractEntityEvent event) throws SQLException {
 		Player player = (Player) event.getPlayer();
 		Entity entity = event.getRightClicked();
-		ActiveMob mythicMob = MythicBukkit.inst().getMobManager().getActiveMob(entity.getUniqueId()).orElse(null);
 
-		if (player.isOp() && player.isSneaking() && mythicMob != null
-				&& mythicMob.getType().getInternalName().toUpperCase().startsWith("NPC")) {
+		if (event.getHand() == EquipmentSlot.OFF_HAND)
+			return;
+
+		NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+		NamespacedKey npcKey = new NamespacedKey(plugin, "levelup_npc");
+		if (entity.getPersistentDataContainer().has(npcKey) || (npc != null && npc.data().has("levelup_npc"))) {
 			event.setCancelled(true);
-			if (npcInv.containsKey(entity.getUniqueId())) {
-				npcInv.remove(entity.getUniqueId());
-			}
-			player.openInventory(NPCController.getFirstNPCInventory(plugin, player, entity.getUniqueId()));
 
-		} else {
-			if (plugin.npcs.containsKey(entity.getUniqueId())) {
-				openTradeGUI(player, entity.getUniqueId());
+			if (player.isOp() && player.isSneaking()) {
+				player.openInventory(NPCController.getFirstNPCInventory(plugin, player, entity.getUniqueId()));
+
+			} else {
+				NamespacedKey typeKey = new NamespacedKey(plugin, "levelup_npc_type");
+				NamespacedKey tradeKey = new NamespacedKey(plugin, "levelup_npc_trade");
+				if (entity.getPersistentDataContainer().has(typeKey)) {
+					String type = entity.getPersistentDataContainer().get(typeKey, PersistentDataType.STRING);
+
+					if (type.equalsIgnoreCase("blacksmith")) {
+						NPCController.showDefaultMessage(plugin, player);
+					}
+
+				} else if (entity.getPersistentDataContainer().has(tradeKey)) {
+					openTradeGUI(player, entity.getUniqueId());
+				}
 			}
 		}
 	}
@@ -92,37 +99,6 @@ public class NPCEvent implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void onInventoryClose(InventoryCloseEvent event) throws SQLException {
-		Inventory inv = event.getInventory();
-
-		if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_1.val()))) {
-			ItemStack npcID = inv.getItem(0);
-			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
-
-			ItemStack nameTag = inv.getItem(49);
-			if (nameTag != null) {
-				String name = nameTag.getItemMeta().getDisplayName();
-
-				Entity entity = plugin.getServer().getEntity(uuid);
-				entity.setCustomName(name);
-			}
-			saveTradeList(uuid);
-
-		} else if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_2.val()))) {
-			ItemStack npcID = inv.getItem(49);
-			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
-			npcInv.get(uuid).set(0, inv);
-			saveTradeList(uuid);
-
-		} else if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_3.val()))) {
-			ItemStack npcID = inv.getItem(49);
-			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
-			npcInv.get(uuid).set(1, inv);
-			saveTradeList(uuid);
-		}
-	}
-
 	public void clickFirstNPCInventory(InventoryClickEvent event) throws SQLException {
 		Player player = (Player) event.getWhoClicked();
 		Inventory inv = event.getInventory();
@@ -136,7 +112,14 @@ public class NPCEvent implements Listener {
 
 		if (slot == 8) {
 			event.setCancelled(true);
-			npc.setHealth(0);
+			npcInv.remove(npc.getUniqueId());
+			NPC citizenNPC = CitizensAPI.getNPCRegistry().getByUniqueId(npc.getUniqueId());
+
+			if (citizenNPC != null) {
+				citizenNPC.destroy();
+			}
+			npc.remove();
+
 			event.getWhoClicked().closeInventory();
 
 		} else if (slot == 49) {
@@ -238,34 +221,84 @@ public class NPCEvent implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onInventoryClose(InventoryCloseEvent event) throws SQLException {
+		Inventory inv = event.getInventory();
+
+		if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_1.val()))) {
+			ItemStack npcID = inv.getItem(0);
+			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
+
+			ItemStack nameTag = inv.getItem(49);
+			if (nameTag != null) {
+				String name = nameTag.getItemMeta().getDisplayName();
+
+				Entity entity = plugin.getServer().getEntity(uuid);
+				entity.setCustomName(name);
+
+				NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+				if (npc != null) {
+					npc.setName(name);
+				}
+			}
+			saveTradeList(uuid);
+
+		} else if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_2.val()))) {
+			ItemStack npcID = inv.getItem(49);
+			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
+			npcInv.get(uuid).set(0, inv);
+			saveTradeList(uuid);
+
+		} else if (event.getView().getTitle().equals(MenuController.getInventoryTitle(MenuUnicode.NPC_3.val()))) {
+			ItemStack npcID = inv.getItem(49);
+			UUID uuid = UUID.fromString(npcID.getItemMeta().getDisplayName());
+			npcInv.get(uuid).set(1, inv);
+			saveTradeList(uuid);
+		}
+	}
+
 	private void saveTradeList(UUID uuid) throws SQLException {
+		Entity entity = plugin.getServer().getEntity(uuid);
+
 		if (npcInv.containsKey(uuid)) {
-			List<NPCTrade> tradeList = new ArrayList<NPCTrade>();
+			JsonArray jsonArray = new JsonArray();
 
 			int row = 0;
 			int col = 0;
 
 			while (!npcInv.get(uuid).isEmpty()) {
+				JsonObject jsonObject = new JsonObject();
+
 				ItemStack firstSlot = npcInv.get(uuid).get(0).getItem(MenuController.slot(row, col));
 				ItemStack secondSlot = npcInv.get(uuid).get(0).getItem(MenuController.slot(row, col + 1));
 				ItemStack resultSlot = npcInv.get(uuid).get(0).getItem(MenuController.slot(row, col + 3));
 
 				if ((firstSlot != null || secondSlot != null) && resultSlot != null) {
-					NPCTradeItem item1 = firstSlot == null ? null : new NPCTradeItem(firstSlot);
-					NPCTradeItem item2 = secondSlot == null ? null : new NPCTradeItem(secondSlot);
-					NPCTradeItem result = new NPCTradeItem(resultSlot);
+					LevelUpItem item1 = null;
+					if (firstSlot != null)
+						item1 = new LevelUpItem(firstSlot);
+
+					LevelUpItem item2 = null;
+					if (secondSlot != null)
+						item2 = new LevelUpItem(secondSlot);
+
+					LevelUpItem result = new LevelUpItem(resultSlot);
 
 					if (item1 != null && item2 != null) {
-						tradeList.add(new NPCTrade(item1, item2, result));
+						jsonObject.add("item1", item1.createItemJson());
+						jsonObject.add("item2", item2.createItemJson());
 
 					} else if (item1 != null && item2 == null) {
-						tradeList.add(new NPCTrade(item1, result));
+						jsonObject.add("item1", item1.createItemJson());
 
 					} else if (item1 == null && item2 != null) {
-						tradeList.add(new NPCTrade(item2, result));
+						jsonObject.add("item1", item2.createItemJson());
 					}
-				}
 
+					jsonObject.add("result", result.createItemJson());
+					jsonArray.add(jsonObject);
+				}
+				
 				row++;
 
 				if (row == 5) {
@@ -284,24 +317,35 @@ public class NPCEvent implements Listener {
 			col = 0;
 
 			while (npcInv.get(uuid).size() > 1) {
+				JsonObject jsonObject = new JsonObject();
+
 				ItemStack firstSlot = npcInv.get(uuid).get(1).getItem(MenuController.slot(row, col));
 				ItemStack secondSlot = npcInv.get(uuid).get(1).getItem(MenuController.slot(row, col + 1));
 				ItemStack resultSlot = npcInv.get(uuid).get(1).getItem(MenuController.slot(row, col + 3));
 
 				if ((firstSlot != null || secondSlot != null) && resultSlot != null) {
-					NPCTradeItem item1 = firstSlot == null ? null : new NPCTradeItem(firstSlot);
-					NPCTradeItem item2 = secondSlot == null ? null : new NPCTradeItem(secondSlot);
-					NPCTradeItem result = new NPCTradeItem(resultSlot);
+					LevelUpItem item1 = null;
+					if (firstSlot != null)
+						item1 = new LevelUpItem(firstSlot);
+
+					LevelUpItem item2 = null;
+					item2 = new LevelUpItem(secondSlot);
+
+					LevelUpItem result = new LevelUpItem(resultSlot);
 
 					if (item1 != null && item2 != null) {
-						tradeList.add(new NPCTrade(item1, item2, result));
+						jsonObject.add("item1", item1.createItemJson());
+						jsonObject.add("item2", item2.createItemJson());
 
 					} else if (item1 != null && item2 == null) {
-						tradeList.add(new NPCTrade(item1, result));
+						jsonObject.add("item1", item1.createItemJson());
 
 					} else if (item1 == null && item2 != null) {
-						tradeList.add(new NPCTrade(item2, result));
+						jsonObject.add("item1", item2.createItemJson());
 					}
+
+					jsonObject.add("result", result.createItemJson());
+					jsonArray.add(jsonObject);
 				}
 
 				row++;
@@ -318,24 +362,13 @@ public class NPCEvent implements Listener {
 				}
 			}
 
-			if (tradeList.isEmpty()) {
-
-				if (plugin.npcs.containsKey(uuid)) {
-					plugin.npcs.remove(uuid);
-					NPCController.deleteNPC(plugin, uuid);
+			NamespacedKey tradeKey = new NamespacedKey(plugin, "levelup_npc_trade");
+			if (jsonArray.isEmpty()) {
+				if (entity.getPersistentDataContainer().has(tradeKey)) {
+					entity.getPersistentDataContainer().remove(tradeKey);
 				}
-
 			} else {
-
-				if (plugin.npcs.containsKey(uuid)) {
-					plugin.npcs.replace(uuid, tradeList);
-
-				} else {
-					plugin.npcs.put(uuid, tradeList);
-					NPCController.addNPC(plugin, uuid);
-				}
-
-				NPCController.setTradeList(plugin, uuid, tradeList);
+				entity.getPersistentDataContainer().set(tradeKey, PersistentDataType.STRING, jsonArray.toString());
 			}
 		}
 	}
@@ -345,43 +378,28 @@ public class NPCEvent implements Listener {
 		Merchant merchant = plugin.getServer().createMerchant(entity.getCustomName());
 		List<MerchantRecipe> recipes = new ArrayList<MerchantRecipe>();
 
-		List<NPCTrade> tradeList = plugin.npcs.get(uuid);
+		NamespacedKey tradeKey = new NamespacedKey(plugin, "levelup_npc_trade");
+		if (entity.getPersistentDataContainer().has(tradeKey, PersistentDataType.STRING)) {
+			String json = entity.getPersistentDataContainer().get(tradeKey, PersistentDataType.STRING);
+			JsonArray jsonArray = JsonParser.parseString(json).getAsJsonArray();
 
-		for (NPCTrade trade : tradeList) {
+			for (JsonElement e : jsonArray) {
+				JsonObject jsonObject = e.getAsJsonObject();
+				ItemStack item1 = new LevelUpItem(jsonObject.get("item1").getAsJsonObject()).getItemStack();
 
-			ItemStack item1 = null;
-			if (trade.getItem1().getNamespacedID() != null) {
-				item1 = CustomStack.getInstance(trade.getItem1().getNamespacedID()).getItemStack().clone();
-			} else {
-				item1 = new ItemStack(Material.getMaterial(trade.getItem1().getMaterial()));
+				ItemStack item2 = null;
+				if (jsonObject.has("item2"))
+					item2 = new LevelUpItem(jsonObject.get("item2").getAsJsonObject()).getItemStack();
+
+				ItemStack result = new LevelUpItem(jsonObject.get("result").getAsJsonObject()).getItemStack();
+
+				MerchantRecipe recipe = new MerchantRecipe(result, 10000);
+				recipe.addIngredient(item1);
+				if (item2 != null)
+					recipe.addIngredient(item2);
+
+				recipes.add(recipe);
 			}
-			item1.setAmount(trade.getItem1().getCount());
-
-			ItemStack item2 = null;
-			if (trade.getItem2() != null) {
-				if (trade.getItem2().getNamespacedID() != null) {
-					item2 = CustomStack.getInstance(trade.getItem2().getNamespacedID()).getItemStack().clone();
-				} else {
-					item2 = new ItemStack(Material.getMaterial(trade.getItem2().getMaterial()));
-				}
-				item2.setAmount(trade.getItem2().getCount());
-			}
-
-			ItemStack result = null;
-			if (trade.getResult().getNamespacedID() != null) {
-				result = CustomStack.getInstance(trade.getResult().getNamespacedID()).getItemStack().clone();
-			} else {
-				result = new ItemStack(Material.getMaterial(trade.getResult().getMaterial()));
-			}
-			result.setAmount(trade.getResult().getCount());
-
-			MerchantRecipe recipe = new MerchantRecipe(result, 10000);
-			recipe.addIngredient(item1);
-			if (item2 != null) {
-				recipe.addIngredient(item2);
-			}
-
-			recipes.add(recipe);
 		}
 
 		merchant.setRecipes(recipes);

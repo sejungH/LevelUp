@@ -210,23 +210,23 @@ public class VillageEvent implements Listener {
 						coordinate[1] = (int) player.getLocation().getY();
 						coordinate[2] = (int) player.getLocation().getZ();
 
-						player.sendMessage("----------- 마을 신청서 -----------");
+						player.sendMessage(ChatColor.GREEN + "----------- 마을 신청서 -----------");
 						for (String line : context.split("\n")) {
 							if (line.startsWith("마을:") || line.startsWith("이장:") || line.startsWith("마을원:")) {
 								player.sendMessage(line);
 							}
 						}
 						player.sendMessage("스폰: " + coordinate[0] + ", " + coordinate[1] + ", " + coordinate[2]);
-						player.sendMessage("--------------------------------");
-						player.sendMessage("위 정보로 마을을 생성하시겠습니까?");
+						player.sendMessage(ChatColor.GREEN + "-------------------------------");
+						player.sendMessage(ChatColor.GREEN + "위 정보로 마을을 생성하시겠습니까?");
 
 						TextComponent yes = new TextComponent(ChatColor.GREEN + "> " + ChatColor.BOLD + "예");
 						yes.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("마을을 생성합니다")));
 						yes.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마을 생성 villageBook confirm "
 								+ coordinate[0] + " " + coordinate[1] + " " + coordinate[2]));
 
-						TextComponent no = new TextComponent(ChatColor.GREEN + "> " + ChatColor.BOLD + "예");
-						no.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("마을을 생성합니다")));
+						TextComponent no = new TextComponent(ChatColor.GREEN + "> " + ChatColor.BOLD + "아니오");
+						no.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("마을을 생성을 취소합니다")));
 						no.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마을 생성 villageBook deny"));
 
 						player.spigot().sendMessage(yes);

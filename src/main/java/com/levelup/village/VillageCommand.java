@@ -100,8 +100,11 @@ public class VillageCommand implements CommandExecutor {
 							sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다.");
 						}
 
-					} else if (args.length == 3 && args[1].equalsIgnoreCase("villageBook")) {
-						if (args[2].equalsIgnoreCase("confirm")) {
+					} else if (args.length > 2 && args[1].equalsIgnoreCase("villageBook")) {
+
+						if (args.length == 6 && args[2].equalsIgnoreCase("confirm")) {
+							sender.sendMessage(ChatColor.GREEN + "마을을 생성하는 중입니다...");
+							
 							NamespacedKey villageKey = new NamespacedKey(plugin, "village_application");
 							if (player.getInventory().contains(Material.WRITTEN_BOOK)) {
 								Map<Integer, ? extends ItemStack> books = player.getInventory()
@@ -155,13 +158,13 @@ public class VillageCommand implements CommandExecutor {
 												.getBlockAt(coordinate[0], coordinate[1], coordinate[2]).getChunk();
 
 										int villageId = VillageController.addVillage(plugin, villageName);
-										VillageController.addUser(plugin, villageId, presidentData);
+										VillageController.addUser(plugin, villageId, presidentData.getUuid());
 										VillageController.registerPresident(plugin, presidentData);
 										for (String username : villager) {
 											if (!username.equalsIgnoreCase(president)) {
 												PlayerData playerData = PlayerController.getPlayerData(plugin,
 														username);
-												VillageController.addUser(plugin, villageId, playerData);
+												VillageController.addUser(plugin, villageId, playerData.getUuid());
 											}
 										}
 										VillageController.setVillageSpawn(plugin, villageId, coordinate);
@@ -170,8 +173,8 @@ public class VillageCommand implements CommandExecutor {
 											plugin.villageChunks.put(villageId, new ArrayList<Chunk>());
 
 										ChunkController.addVillageChunk(plugin, villageId, chunk);
-										ChunkController.displayVillageChunkBorder(plugin, player, chunk,
-												Color.GREEN, 5);
+										ChunkController.displayVillageChunkBorder(plugin, player, chunk, Color.GREEN,
+												5);
 										player.sendMessage(ChatColor.GREEN + "축하합니다! 마을 [" + ChatColor.GOLD
 												+ villageName + ChatColor.GREEN + "] 이(가) 생성되었습니다!");
 										player.performCommand("마을 정보 " + villageName);
@@ -185,6 +188,7 @@ public class VillageCommand implements CommandExecutor {
 
 						} else if (args[2].equalsIgnoreCase("deny")) {
 							sender.sendMessage(ChatColor.RED + "마을이 생성되지 않았습니다");
+
 						} else {
 							sender.sendMessage(ChatColor.RED + "사용법: /마을 생성 <마을이름>");
 						}
@@ -595,13 +599,13 @@ public class VillageCommand implements CommandExecutor {
 											ChunkController.addVillageChunk(plugin, villageId, chunk);
 											ChunkController.displayVillageChunkBorder(plugin, player, chunk,
 													Color.GREEN, 5);
-											
+
 											int[] coordinate = new int[3];
 											coordinate[0] = (int) player.getLocation().getX();
 											coordinate[1] = (int) player.getLocation().getY();
 											coordinate[2] = (int) player.getLocation().getZ();
 											VillageController.setVillageSpawn(plugin, villageId, coordinate);
-											
+
 											LocalDate today = LocalDate.now();
 											LocalDate lastTaxPaid;
 											if (today.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
@@ -609,10 +613,11 @@ public class VillageCommand implements CommandExecutor {
 											} else {
 												lastTaxPaid = today.minusDays(today.getDayOfWeek().getValue() + 1);
 											}
-											int newTax = VillageController.countVillageMembers(plugin, villageId) * VillageController.TAX_RATE;
+											int newTax = VillageController.countVillageMembers(plugin, villageId)
+													* VillageController.TAX_RATE;
 											VillageController.setLastTax(plugin, villageId, newTax);
 											VillageController.updateLastTaxPaid(plugin, villageId, lastTaxPaid);
-											
+
 											sender.sendMessage(
 													ChatColor.GREEN + "마을 청크를 성공적으로 구매했습니다  " + ChatColor.RESET
 															+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
@@ -649,7 +654,7 @@ public class VillageCommand implements CommandExecutor {
 													ChunkController.addVillageChunk(plugin, villageId, newChunk);
 													ChunkController.displayVillageChunkBorder(plugin, player, newChunk,
 															Color.GREEN, 5);
-													
+
 													sender.sendMessage(ChatColor.GREEN + "마을 청크를 성공적으로 구매했습니다  "
 															+ ChatColor.RESET + LevelUpIcon.COIN.val() + ChatColor.GOLD
 															+ " " + price);
@@ -676,6 +681,18 @@ public class VillageCommand implements CommandExecutor {
 							if (villageId > 0) {
 
 								if (world.getAlias().equalsIgnoreCase("world")) {
+
+									VillageData vd = plugin.villages.get(villageId);
+									int[] spawn = vd.getSpawn();
+									if (spawn != null) {
+										Chunk spawnChunk = world.getCBWorld().getBlockAt(spawn[0], spawn[1], spawn[2])
+												.getChunk();
+										if (chunk.equals(spawnChunk)) {
+											sender.sendMessage(ChatColor.RED + "이 청크는 마을 스폰 지점을 포함하고 있어서 판매할 수 없습니다");
+											return false;
+										}
+									}
+
 									PlayerData pd = plugin.players.get(player.getUniqueId());
 									List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
 									List<Chunk> adjoints = ChunkController.getAdjointChunks(chunk);
@@ -934,22 +951,18 @@ public class VillageCommand implements CommandExecutor {
 
 	public void addUser(CommandSender sender, int villageId, PlayerData pd) throws SQLException {
 		if (pd.getVillage() == 0) {
-			String villageName = VillageController.addUser(plugin, villageId, pd);
+			VillageData vd = plugin.villages.get(villageId);
+			VillageController.addUser(plugin, villageId, pd.getUuid());
 
-			if (villageName != null) {
-				sender.sendMessage(ChatColor.GREEN + "유저 [" + ChatColor.GOLD + pd.getUsername() + ChatColor.GREEN
-						+ "] 이(가) 마을 [" + ChatColor.GOLD + villageName + ChatColor.GREEN + "] 에 가입되었습니다.");
+			sender.sendMessage(ChatColor.GREEN + "유저 [" + ChatColor.GOLD + pd.getUsername() + ChatColor.GREEN
+					+ "] 이(가) 마을 [" + ChatColor.GOLD + vd.getName() + ChatColor.GREEN + "] 에 가입되었습니다.");
 
-				OfflinePlayer p = plugin.getServer().getOfflinePlayer(pd.getUuid());
-				if (p.isOnline()) {
-					Player pp = (Player) p;
-					pp.sendMessage(ChatColor.GREEN + "축하합니다! 마을 [" + ChatColor.GOLD + villageName + ChatColor.GREEN
-							+ "] 에 가입되었습니다.");
-					pp.playSound(pp, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
-				}
-
-			} else {
-				sender.sendMessage(ChatColor.RED + "오류가 발생했습니다. 시스템 어드민에게 문의해주세요.");
+			OfflinePlayer p = plugin.getServer().getOfflinePlayer(pd.getUuid());
+			if (p.isOnline()) {
+				Player pp = (Player) p;
+				pp.sendMessage(ChatColor.GREEN + "축하합니다! 마을 [" + ChatColor.GOLD + vd.getName() + ChatColor.GREEN
+						+ "] 에 가입되었습니다.");
+				pp.playSound(pp, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 			}
 
 		} else {
@@ -965,16 +978,17 @@ public class VillageCommand implements CommandExecutor {
 
 	public void deleteUser(CommandSender sender, PlayerData pd) throws SQLException {
 		if (pd.getVillage() > 0) {
-			String villageName = VillageController.deleteUser(plugin, pd);
+			VillageData vd = plugin.villages.get(pd.getVillage());
+			VillageController.deleteUser(plugin, pd.getUuid());
 			sender.sendMessage(ChatColor.GREEN + "유저 [" + ChatColor.GOLD + pd.getUsername() + ChatColor.GREEN
-					+ "] 이(가) 마을 [" + ChatColor.GOLD + villageName + ChatColor.GREEN + "] 에서 탈퇴되었습니다.");
+					+ "] 이(가) 마을 [" + ChatColor.GOLD + vd.getName() + ChatColor.GREEN + "] 에서 탈퇴되었습니다.");
 
 			OfflinePlayer p = plugin.getServer().getOfflinePlayer(pd.getUuid());
 
 			if (p.isOnline()) {
 				Player pp = (Player) p;
 				pp.sendMessage(
-						ChatColor.GREEN + "마을 [" + ChatColor.GOLD + villageName + ChatColor.GREEN + "] 에서 탈퇴되었습니다.");
+						ChatColor.GREEN + "마을 [" + ChatColor.GOLD + vd.getName() + ChatColor.GREEN + "] 에서 탈퇴되었습니다.");
 				pp.playSound(pp, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 			}
 

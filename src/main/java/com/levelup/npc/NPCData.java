@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.levelup.LevelUpItem;
+
 public class NPCData {
 
 	private UUID uuid;
 	private String id;
 	private String displayName;
-	private List<NPCTradeItem> trades;
+	private List<LevelUpItem> trades;
 
 	public NPCData(UUID uuid, String id, String displayName) {
 		this.uuid = uuid;
 		this.id = id;
 		this.displayName = displayName;
-		this.trades = new ArrayList<NPCTradeItem>();
+		this.trades = new ArrayList<LevelUpItem>();
 	}
 
 	public UUID getUuid() {
@@ -42,11 +44,11 @@ public class NPCData {
 		this.displayName = displayName;
 	}
 
-	public List<NPCTradeItem> getTrades() {
+	public List<LevelUpItem> getTrades() {
 		return trades;
 	}
 
-	public void setTrades(List<NPCTradeItem> trades) {
+	public void setTrades(List<LevelUpItem> trades) {
 		this.trades = trades;
 	}
 

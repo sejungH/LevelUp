@@ -55,7 +55,8 @@ public class PlayerController {
 		return players;
 	}
 
-	public static void addPlayer(LevelUp plugin, Connection conn, Player player) throws SQLException {
+	public static void addPlayer(LevelUp plugin, Player player) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
 		String sql = "INSERT INTO player (uuid, username, balance, last_online) VALUES (?, ?, ?, ?)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -147,12 +148,12 @@ public class PlayerController {
 	}
 
 	public static void updateListFooter(LevelUp plugin, Player player) {
-		String onlineCount = ChatController.gradient("동접자 수", ChatColor.of("#00A2E8"), ChatColor.of("#99D9EA"))
+		String onlineCount = ChatController.gradient("   동접자 수", ChatColor.of("#00A2E8"), ChatColor.of("#99D9EA"))
 				+ ChatColor.WHITE + ": " + plugin.getServer().getOnlinePlayers().size() + " / "
 				+ plugin.getServer().getMaxPlayers();
 		String ping = ChatColor.BOLD + ChatController.gradient("지연시간", ChatColor.of("#FFF200"), ChatColor.of("#EFE4B0"))
 				+ ChatColor.WHITE + ": " + player.getPing();
-		player.setPlayerListFooter("\n" + onlineCount + "       " + ping + "\n");
+		player.setPlayerListFooter("\n" + onlineCount + "       " + ping + "   \n");
 	}
 
 	public static void updateNickname(LevelUp plugin, UUID uuid, String nickname) throws SQLException {

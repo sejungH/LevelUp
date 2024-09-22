@@ -42,6 +42,29 @@ public class ScoreboardController {
 
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 		VillageData vd = plugin.villages.get(pd.getVillage());
+		
+		// 월드
+		Score world;
+		MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+		MVWorldManager worldManager = core.getMVWorldManager();
+		MultiverseWorld mvWorld = worldManager.getMVWorld(player.getWorld());
+
+		if (mvWorld.getAlias().equalsIgnoreCase("spawn")) {
+			world = objective.getScore("§f" + LevelUpIcon.WORLD.val() + " 광장");
+			
+		} else if (mvWorld.getAlias().equalsIgnoreCase("world")) {
+			world = objective.getScore("§f" + LevelUpIcon.WORLD.val() + " 건축 월드");
+
+		} else if (mvWorld.getAlias().equalsIgnoreCase("wild")) {
+			world = objective.getScore("§f" + LevelUpIcon.WORLD.val() + " 야생 월드");
+
+		} else if (mvWorld.getAlias().equalsIgnoreCase("nether")) {
+			world = objective.getScore("§f" + LevelUpIcon.WORLD.val() + " 지옥 월드");
+			
+		} else {
+			world = objective.getScore("§f" + LevelUpIcon.WORLD.val() + " 알 수 없음");
+		}
+		world.setScore(index--);
 
 		// 마을
 		Score village;
@@ -73,13 +96,11 @@ public class ScoreboardController {
 
 		// 계절
 		Score season;
-		MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
-		MVWorldManager worldManager = core.getMVWorldManager();
-		MultiverseWorld world = worldManager.getMVWorld("world");
+		MultiverseWorld mainWorld = worldManager.getMVWorld("world");
 
-		int date = CustomCropsPlugin.get().getIntegrationManager().getSeasonInterface().getDate(world.getCBWorld());
+		int date = CustomCropsPlugin.get().getIntegrationManager().getSeasonInterface().getDate(mainWorld.getCBWorld());
 
-		switch (CustomCropsPlugin.get().getIntegrationManager().getSeasonInterface().getSeason(world.getCBWorld())) {
+		switch (CustomCropsPlugin.get().getIntegrationManager().getSeasonInterface().getSeason(mainWorld.getCBWorld())) {
 		case SPRING:
 			season = objective.getScore("§f" + LevelUpIcon.SPRING.val() + " 봄 " + date + "일");
 			break;
@@ -98,7 +119,7 @@ public class ScoreboardController {
 		}
 		season.setScore(index--);
 
-		Score time = objective.getScore("§f" + LevelUpIcon.CLOCK.val() + " " + parseTime(world.getCBWorld().getTime()));
+		Score time = objective.getScore("§f" + LevelUpIcon.CLOCK.val() + " " + parseTime(mainWorld.getCBWorld().getTime()));
 		time.setScore(index--);
 
 		// 공백
@@ -106,11 +127,6 @@ public class ScoreboardController {
 		space3.setScore(index--);
 
 		player.setScoreboard(scoreboard);
-	}
-
-	public static void updateScoreboard(LevelUp plugin, Player player) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public static String parseTime(long time) {

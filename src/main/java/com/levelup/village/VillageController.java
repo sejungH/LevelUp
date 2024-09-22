@@ -182,6 +182,12 @@ public class VillageController {
 		plugin.villages.remove(villageId);
 		if (plugin.villageChunks.containsKey(villageId))
 			plugin.villageChunks.remove(villageId);
+		
+		for (UUID uuid : plugin.players.keySet()) {
+			PlayerData pd = plugin.players.get(uuid);
+			if (pd.getVillage() == villageId)
+				deleteUser(plugin, uuid);
+		}
 	}
 
 	public static int addUser(LevelUp plugin, String villageName, PlayerData pd) throws SQLException {
@@ -209,35 +215,33 @@ public class VillageController {
 		}
 	}
 
-	public static String addUser(LevelUp plugin, int villageId, PlayerData pd) throws SQLException {
+	public static void addUser(LevelUp plugin, int villageId, UUID uuid) throws SQLException {
+		PlayerData pd = plugin.players.get(uuid);
+		VillageData vd = plugin.villages.get(villageId);
 		Connection conn = plugin.mysql.getConnection();
-		String villageName = getVillageName(plugin, villageId);
 
-		if (villageName != null) {
+		if (vd != null) {
 
 			String sql = "UPDATE player SET village = ? WHERE uuid = ?";
 			PreparedStatement pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, villageId);
 			pstmt.setString(2, pd.getUuid().toString());
 
-			plugin.getLogger().info("유저 [" + pd.getUsername() + "] 이(가) 마을 [" + villageName + "] 에 가입되었습니다.");
+			plugin.getLogger().info("유저 [" + pd.getUsername() + "] 이(가) 마을 [" + vd.getName() + "] 에 가입되었습니다.");
 
 			pstmt.executeUpdate();
 			pstmt.close();
 
 			pd.setVillage(villageId);
 
-			return villageName;
-
-		} else {
-
-			return null;
-		}
+		} 
 	}
 
-	public static String deleteUser(LevelUp plugin, PlayerData pd) throws SQLException {
-		Connection conn = plugin.mysql.getConnection();
+	public static void deleteUser(LevelUp plugin, UUID uuid) throws SQLException {
+		PlayerData pd = plugin.players.get(uuid);
 		VillageData vd = plugin.villages.get(pd.getVillage());
+		
+		Connection conn = plugin.mysql.getConnection();
 
 		String sql = "UPDATE player SET village = NULL WHERE uuid = ?";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -245,47 +249,42 @@ public class VillageController {
 		pstmt.executeUpdate();
 
 		plugin.getLogger().info("유저 [" + pd.getUsername() + "] 이(가) 마을 [" + vd.getName() + "] 에서 탈퇴되었습니다.");
-
+		
 		pd.setVillage(0);
+		
+		if (vd != null) {
+			if (vd.getPresident() != null && vd.getPresident().equals(pd.getUuid())) {
+				pstmt.clearParameters();
+				sql = "UPDATE village SET president = NULL WHERE id = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, pd.getVillage());
+				pstmt.executeUpdate();
 
-		if (vd.getPresident() != null && vd.getPresident().equals(pd.getUuid())) {
-			pstmt.clearParameters();
-			sql = "UPDATE village SET president = NULL WHERE id = ?";
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, pd.getVillage());
-			pstmt.executeUpdate();
+				plugin.getLogger().info("유저 [" + pd.getUsername() + "] 은(는) 이제 마을 [" + vd.getName() + "] 의 이장이 아닙니다.");
 
-			plugin.getLogger().info("유저 [" + pd.getUsername() + "] 은(는) 이제 마을 [" + vd.getName() + "] 의 이장이 아닙니다.");
-
-			vd.setPresident(null);
-
-			pstmt.close();
-		}
-
-		int count = 0;
-		for (UUID uuid : plugin.players.keySet()) {
-			PlayerData p = plugin.players.get(uuid);
-			if (p.getVillage() == pd.getVillage()) {
-				count++;
+				vd.setPresident(null);
 			}
-		}
+			
+			int count = countVillageMembers(plugin, vd.getId());
 
-		if (count < 3) {
-			updateDeletionPeriod(plugin, vd.getId(), LocalDate.now());
+			if (count < 3) {
+				updateDeletionPeriod(plugin, vd.getId(), LocalDate.now());
 
-			for (UUID uuid : plugin.players.keySet()) {
-				PlayerData p = plugin.players.get(uuid);
-				if (p.getVillage() == pd.getVillage()) {
-					OfflinePlayer op = plugin.getServer().getOfflinePlayer(uuid);
-					if (op.isOnline()) {
-						((Player) op).sendMessage(LevelUpIcon.MAIL.val() + " " + ChatColor.RED
-								+ "마을의 총 인원이 3명보다 적습니다. 7일 이내에 새로운 마을원을 모집하세요.");
+				for (UUID u : plugin.players.keySet()) {
+					PlayerData p = plugin.players.get(u);
+					if (p.getVillage() == pd.getVillage()) {
+						OfflinePlayer op = plugin.getServer().getOfflinePlayer(u);
+						if (op.isOnline()) {
+							((Player) op).sendMessage(LevelUpIcon.MAIL.val() + " " + ChatColor.RED
+									+ "마을의 총 인원이 3명보다 적습니다. 7일 이내에 새로운 마을원을 모집하세요.");
+						}
 					}
 				}
 			}
+			
 		}
-
-		return vd.getName();
+		
+		pstmt.close();
 	}
 
 	public static void registerPresident(LevelUp plugin, PlayerData pd) throws SQLException {
@@ -462,8 +461,11 @@ public class VillageController {
 			VillageData vd = plugin.villages.get(pd.getVillage());
 			LocalDate today = LocalDate.now();
 			LocalDate lastPaidWeek = vd.getLastTaxPaid().minusDays(vd.getLastTaxPaid().getDayOfWeek().getValue());
-			LocalDate thisWeek = today.minusDays(today.getDayOfWeek().getValue());
-			LocalDate dueDate = today.plusDays(6 - today.getDayOfWeek().getValue());
+			int dayOfWeek = today.getDayOfWeek().getValue();
+			if (today.getDayOfWeek().equals(DayOfWeek.SUNDAY))
+				dayOfWeek = 0;
+			LocalDate thisWeek = today.minusDays(dayOfWeek);
+			LocalDate dueDate = today.plusDays(6 - dayOfWeek);
 
 			if (vd.getLastTaxPaid() == null || lastPaidWeek.until(thisWeek, ChronoUnit.DAYS) > 0) {
 

@@ -1,0 +1,181 @@
+Items:
+  - material: cobblestone
+    kr: 조약돌
+    char: \uED00
+  - material: cobbled_deepslate
+    kr: 심층암 조약돌
+    char: \uED01
+  - material: raw_iron
+    kr: 철 원석
+    char: \uED02
+  - material: coal
+    kr: 석탄
+    char: \uED03
+
+  - material: iron_ingot
+    kr: 철 주괴
+    char: \uED04
+  - material: gold_ingot
+    kr: 금 주괴
+    char: \uED05
+  - material: diamond
+    kr: 다이아몬드
+    char: \uED06
+  - material: netherite_ingot
+    kr: 네더라이트 주괴
+    char: \uED07
+  - material: lapis_lazuli
+    kr: 청금석
+    char: \uED08
+  - material: redstone
+    kr: 레드스톤 가루
+    char: \uED09
+  - material: iron_block
+    kr: 철 블록
+    char: \uED0A
+  - material: gold_block
+    kr: 금 블록
+    char: \uED0B
+  - material: diamond_block
+    kr: 다이아몬드 블록
+    char: \uED0C
+  - material: lapis_block
+    kr: 청금석 블록
+    char: \uED0E
+  - material: redstone_block
+    kr: 레드스톤 블록
+    char: \uED0F
+
+  - material: quartz_block
+    kr: 석영 블록
+    char: \uED10
+  - material: glowstone
+    kr: 발광석
+    char: \uED11
+
+  - material: oak_log
+    kr: 참나무 원목
+    char: \uED12
+  - material: birch_log
+    kr: 자작나무 원목
+    char: \uED13
+  - material: spruce_log
+    kr: 가문비나무 원목
+    char: \uED14
+  - material: dark_oak_log
+    kr: 짙은 참나무 원목
+    char: \uED15
+  - material: acacia_log
+    kr: 아카시아나무 원목
+    char: \uED16
+  - material: jungle_log
+    kr: 정글나무 원목
+    char: \uED17
+  - material: mangrove_log
+    kr: 자작나무 원목
+    char: \uED18
+  - material: cherry_log
+    kr: 벚나무 원목
+    char: \uED19
+  - material: crimson_stem
+    kr: 진홍빛 자루
+    char: \uED1A
+  - material: warped_stem
+    kr: 뒤틀린 자루
+    char: \uED1B
+
+  - material: beef
+    kr: 익히지 않은 소고기
+    char: \uED1C
+  - material: porkchop
+    kr: 익히지 않은 돼지고기
+    char: \uED1D
+  - material: mutton
+    kr: 익히지 않은 양고기
+    char: \uED1E
+  - material: chicken
+    kr: 익히지 않은 닭고기
+    char: \uED1F
+  - material: cooked_beef
+    kr: 스테이크
+    char: \uED20
+  - material: cooked_porkchop
+    kr: 익힌 돼지고기
+    char: \uED21
+  - material: cooked_mutton
+    kr: 익힌 양고기
+    char: \uED22
+  - material: cooked_chicken
+    kr: 익힌 닭고기
+    char: \uED23
+  - material: leather
+    kr: 가죽
+    char: \uED24
+  - material: rabbit_foot
+    kr: 토끼발
+    char: \uED25
+
+  - material: rotten_flesh
+    kr: 썩은 살점
+    char: \uED26
+  - material: bone
+    kr: 뼈다귀
+    char: \uED27
+  - material: string
+    kr: 실
+    char: \uED28
+  - material: gunpowder
+    kr: 화약
+    char: \uED29
+  - material: spider_eye
+    kr: 거미 눈
+    char: \uED2A
+  - material: slime_ball
+    kr: 슬라임볼
+    char: \uED2B
+  - material: magma_cream
+    kr: 마그마 크림
+    char: \uED2C
+  - material: ender_pearl
+    kr: 엔더 진주
+    char: \uED2D
+  - material: blaze_rod
+    kr: 블레이즈 막대기
+    char: \uED2E
+  - material: wither_skeleton_skull
+    kr: 위더 스켈레톤 해골
+    char: \uED2F
+  - material: nether_star
+    kr: 네더의 별
+    char: \uED30
+
+  - material: dirt
+    kr: 흙
+    char: \uED31
+  - material: gravel
+    kr: 자갈
+    char: \uED32
+  - material: sand
+    kr: 모래
+    char: \uED33
+  - material: clay
+    kr: 점토
+    char: \uED34
+  - material: white_concrete_powder
+    kr: 하얀색 콘크리트 가루
+    char: \uED35
+  - material: glass
+    kr: 유리
+    char: \uED36
+  - material: terracotta
+    kr: 테라코타
+    char: \uED37
+  - material: snow_block
+    kr: 눈 블록
+    char: \uED38
+  - material: soul_sand
+    kr: 영혼 모래
+    char: \uED39
+  - material: soul_soil
+    kr: 영혼 흙
+    char: \uED3A

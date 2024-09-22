@@ -33,22 +33,22 @@ public class ToolCommand implements CommandExecutor {
 							ToolData tool = plugin.tools.get(pd.getUuid());
 							
 							if (args[1].equalsIgnoreCase("pickaxe")) {
-								player.getInventory().addItem(tool.getPickaxe().getAsItemStack(plugin));
+								player.getInventory().addItem(tool.getPickaxe().getAsItemStack());
 								sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + args[2] + ChatColor.GREEN
 										+ "] 님의 곡괭이를 소환했습니다");
 								
 							} else if (args[1].equalsIgnoreCase("axe")) {
-								player.getInventory().addItem(tool.getAxe().getAsItemStack(plugin));
+								player.getInventory().addItem(tool.getAxe().getAsItemStack());
 								sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + args[2] + ChatColor.GREEN
 										+ "] 님의 도끼를 소환했습니다");
 								
 							} else if (args[1].equalsIgnoreCase("sword")) {
-								player.getInventory().addItem(tool.getSword().getAsItemStack(plugin));
+								player.getInventory().addItem(tool.getSword().getAsItemStack());
 								sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + args[2] + ChatColor.GREEN
 										+ "] 님의 검을 소환했습니다");
 								
 							} else if (args[1].equalsIgnoreCase("shovel")) {
-								player.getInventory().addItem(tool.getShovel().getAsItemStack(plugin));
+								player.getInventory().addItem(tool.getShovel().getAsItemStack());
 								sender.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD + args[2] + ChatColor.GREEN
 										+ "] 님의 삽을 소환했습니다");
 								

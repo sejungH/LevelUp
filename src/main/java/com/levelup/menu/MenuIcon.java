@@ -4,6 +4,8 @@ package com.levelup.menu;
 import dev.lone.itemsadder.api.CustomStack;
 
 public enum MenuIcon {
+	
+	BLANK("blank"),
 
 	ZERO("zero"),
 	ONE("one"),
@@ -16,19 +18,13 @@ public enum MenuIcon {
 	EIGHT("eight"),
 	NINE("nine"),
 	
-	ZERO_WHITE("zero_white"),
-	ONE_WHITE("one_white"),
-	TWO_WHITE("two_white"),
-	THREE_WHITE("three_white"),
-	FOUR_WHITE("four_white"),
-	FIVE_WHITE("five_white"),
-	SIX_WHITE("six_white"),
-	SEVEN_WHITE("seven_white"),
-	EIGHT_WHITE("eight_white"),
-	NINE_WHITE("nine_white"),
-	
 	PREV("prev"),
-	NEXT("next"),;
+	NEXT("next"),
+	
+	PICKAXE("pickaxe"),
+	AXE("axe"),
+	SWORD("sword"),
+	SHOVEL("shovel");
 	
 	public final CustomStack instance;
 	

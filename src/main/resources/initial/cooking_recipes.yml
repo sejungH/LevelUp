@@ -1,0 +1,14 @@
+- recipes:
+  - material: null
+    namespacedID: "customcrops:tomato"
+    amount: 1
+  - material: "sugar"
+    namespacedID: null
+    amount: 2
+  - material: "glass_bottle"
+    namespacedID: null
+    amount: 1
+  result:
+    material: null
+    namespacedID: "customitems:tank_candy_key"
+    amount: 1

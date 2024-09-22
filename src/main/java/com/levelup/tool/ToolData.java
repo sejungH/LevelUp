@@ -6,7 +6,7 @@ public class ToolData {
 	private AxeData axe;
 	private SwordData sword;
 	private ShovelData shovel;
-	
+
 	public ToolData() {
 		this.pickaxe = null;
 		this.axe = null;
@@ -51,6 +51,21 @@ public class ToolData {
 
 	public void setShovel(ShovelData shovel) {
 		this.shovel = shovel;
+	}
+
+	public ToolAbstract getTool(ToolType type) {
+		switch (type) {
+		case PICKAXE:
+			return pickaxe;
+		case AXE:
+			return axe;
+		case SWORD:
+			return sword;
+		case SHOVEL:
+			return shovel;
+		default:
+			return null;
+		}
 	}
 
 }

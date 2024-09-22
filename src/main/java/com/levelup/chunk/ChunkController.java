@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -36,9 +36,10 @@ import dev.lone.itemsadder.api.CustomStack;
 import net.md_5.bungee.api.ChatColor;
 
 public class ChunkController {
+	
+	public static final List<String> BANNED_BLOCKS = new ArrayList<String>(
+			Arrays.asList("CHEST", "BOX", "FURNACE", "SMOKER", "HOPPER", "BARREL", "SIGN", "BREWING_STAND", "ANVIL"));
 
-	public static final int MIN_Y = 30;
-	public static final Material BLOCK = Material.WHITE_CONCRETE;
 	public static final int PLAYERCHUNK_PRICE = 5;
 	public static final int VILLAGECHUNK_PRICE = 20;
 	public static final double MULTIPLE = 1.3;
@@ -416,7 +417,6 @@ public class ChunkController {
 					frame.setFixed(true);
 					frame.setVisible(false);
 					frame.setFacingDirection(BlockFace.SOUTH);
-					System.out.println(frame.getFacing());
 					frame.setItem(bar.getItemStack());
 					frame.setCustomNameVisible(false);
 					frame.getPersistentDataContainer().set(borderKey, PersistentDataType.BOOLEAN, true);
@@ -510,7 +510,6 @@ public class ChunkController {
 					frame.setFixed(true);
 					frame.setVisible(false);
 					frame.setFacingDirection(BlockFace.SOUTH);
-					System.out.println(frame.getFacing());
 					frame.setItem(bar.getItemStack());
 					frame.setCustomNameVisible(false);
 					frame.getPersistentDataContainer().set(borderKey, PersistentDataType.BOOLEAN, true);
@@ -640,5 +639,39 @@ public class ChunkController {
 
 		return -1;
 	}
-
+	
+	public static boolean canInteract(LevelUp plugin, Player player, Chunk chunk) {
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		
+		UUID owner = getChunkOwnerPlayer(plugin, chunk);
+		if (owner != null) {
+			
+			if (owner.equals(player.getUniqueId())) {
+				return true;
+				
+			} else {
+				PlayerData ownerPD = plugin.players.get(owner);
+				player.sendMessage(ChatColor.RED + ownerPD.getUsername() + " 님이 소유 중인 청크입니다");
+				return false;
+			}
+			
+		}
+			
+		int ownerVillage = getChunkOwnerVillage(plugin, chunk);
+		if (ownerVillage > 0) {
+			
+			if (ownerVillage == pd.getVillage()) {
+				return true;
+				
+			} else {
+				VillageData ownerVD = plugin.villages.get(ownerVillage);
+				player.sendMessage(ChatColor.RED + "마을 [" + ownerVD.getName() + "] 에서 소유 중인 청크입니다");
+				return false;
+			}
+			
+		}
+			
+		player.sendMessage(ChatColor.RED + "본인이 소유 중인 청크가 아닙니다");
+		return false;
+	}
 }

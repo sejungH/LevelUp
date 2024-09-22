@@ -1,5 +1,5 @@
 pickaxe:
-  wood_pickaxe:
+  wooden_pickaxe:
     - level: 0
       exp: 10
       required: 1
@@ -17,7 +17,7 @@ pickaxe:
       - material: coal
         quantity: 16
       - material: cobblestone
-        quantity: 64
+        quantity: 32
 
   iron_pickaxe:
     - level: 0
@@ -33,7 +33,7 @@ pickaxe:
       - material: coal
         quantity: 32
       - material: cobblestone
-        quantity: 128
+        quantity: 64
     - level: 1
       exp: 1500
       required: 1
@@ -49,7 +49,7 @@ pickaxe:
       - material: coal
         quantity: 32
       - material: cobblestone
-        quantity: 192
+        quantity: 128
     - level: 2
       exp: 3000
       required: 1
@@ -65,7 +65,7 @@ pickaxe:
       - material: coal
         quantity: 48
       - material: cobblestone
-        quantity: 256
+        quantity: 192
     - level: 3
       exp: 5000
       required: 1
@@ -120,6 +120,10 @@ pickaxe:
         quantity: 32
       - material: cobbled_deepslate
         quantity: 640
+      - material: quartz_block
+        quantity: 64
+      - material: glowstone
+        quantity: 64
     - level: 1
       exp: 80000
       required: 1
@@ -136,6 +140,10 @@ pickaxe:
         quantity: 8
       - material: cobbled_deepslate
         quantity: 960
+      - material: quartz_block
+        quantity: 128
+      - material: glowstone
+        quantity: 128
     - level: 2
       exp: 160000
       required: 2
@@ -152,6 +160,10 @@ pickaxe:
         quantity: 8
       - material: cobbled_deepslate
         quantity: 960
+      - material: quartz_block
+        quantity: 192
+      - material: glowstone
+        quantity: 192
     - level: 3
       exp: 320000
       required: 2
@@ -168,6 +180,10 @@ pickaxe:
         quantity: 12
       - material: cobbled_deepslate
         quantity: 1280
+      - material: quartz_block
+        quantity: 192
+      - material: glowstone
+        quantity: 192
     - level: 4
       exp: 1000000
       required: 5
@@ -182,6 +198,8 @@ pickaxe:
         quantity: 48
       - material: diamond_block
         quantity: 32
+      - material: netherite_ingot
+        quantity: 1
 
   netherite_pickaxe:
     - level: 0
@@ -198,9 +216,491 @@ pickaxe:
         quantity: 64
       - material: diamond_block
         quantity: 64
+      - material: netherite_ingot
+        quantity: 5
+
+axe:
+  wooden_axe:
+    - level: 0
+      exp: 40
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 4
+
+  stone_axe:
+    - level: 0
+      exp: 100
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 8
+      - material: birch_log
+        quantity: 8
+
+  iron_axe:
+    - level: 0
+      exp: 1000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 32
+      - material: birch_log
+        quantity: 32
+    - level: 1
+      exp: 3000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 64
+      - material: birch_log
+        quantity: 64
+      - material: spruce_log
+        quantity: 64
+      - material: dark_oak_log
+        quantity: 64
+    - level: 2
+      exp: 6000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 128
+      - material: birch_log
+        quantity: 128
+      - material: spruce_log
+        quantity: 128
+      - material: dark_oak_log
+        quantity: 128
+    - level: 3
+      exp: 10000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 192
+      - material: birch_log
+        quantity: 192
+      - material: spruce_log
+        quantity: 192
+      - material: dark_oak_log
+        quantity: 192
+    - level: 4
+      exp: 40000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 256
+      - material: birch_log
+        quantity: 256
+      - material: spruce_log
+        quantity: 256
+      - material: dark_oak_log
+        quantity: 256
+      - material: acacia_log
+        quantity: 256
+      - material: jungle_log
+        quantity: 256
+      - material: mangrove_log
+        quantity: 256
+      - material: cherry_log
+        quantity: 256
         
+  diamond_axe:
+    - level: 0
+      exp: 80000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 384
+      - material: birch_log
+        quantity: 384
+      - material: spruce_log
+        quantity: 384
+      - material: dark_oak_log
+        quantity: 384
+      - material: acacia_log
+        quantity: 384
+      - material: jungle_log
+        quantity: 384
+      - material: mangrove_log
+        quantity: 384
+      - material: cherry_log
+        quantity: 384
+    - level: 1
+      exp: 160000
+      required: 1
+      quest:
+      - material: oak_log
+        quantity: 640
+      - material: birch_log
+        quantity: 640
+      - material: spruce_log
+        quantity: 640
+      - material: dark_oak_log
+        quantity: 640
+      - material: acacia_log
+        quantity: 640
+      - material: jungle_log
+        quantity: 640
+      - material: mangrove_log
+        quantity: 640
+      - material: cherry_log
+        quantity: 640
+      - material: crimson_stem
+        quantity: 640
+      - material: warped_stem
+        quantity: 640
+    - level: 2
+      exp: 320000
+      required: 2
+      quest:
+      - material: oak_log
+        quantity: 512
+      - material: birch_log
+        quantity: 512
+      - material: spruce_log
+        quantity: 512
+      - material: dark_oak_log
+        quantity: 512
+      - material: acacia_log
+        quantity: 512
+      - material: jungle_log
+        quantity: 512
+      - material: mangrove_log
+        quantity: 512
+      - material: cherry_log
+        quantity: 512
+      - material: crimson_stem
+        quantity: 512
+      - material: warped_stem
+        quantity: 512
+    - level: 3
+      exp: 640000
+      required: 2
+      quest:
+      - material: oak_log
+        quantity: 640
+      - material: birch_log
+        quantity: 640
+      - material: spruce_log
+        quantity: 640
+      - material: dark_oak_log
+        quantity: 640
+      - material: acacia_log
+        quantity: 640
+      - material: jungle_log
+        quantity: 640
+      - material: mangrove_log
+        quantity: 640
+      - material: cherry_log
+        quantity: 640
+      - material: crimson_stem
+        quantity: 640
+      - material: warped_stem
+        quantity: 640
+    - level: 4
+      exp: 2000000
+      required: 11
+      quest:
+      - material: oak_log
+        quantity: 128
+      - material: birch_log
+        quantity: 128
+      - material: spruce_log
+        quantity: 128
+      - material: dark_oak_log
+        quantity: 128
+      - material: acacia_log
+        quantity: 128
+      - material: jungle_log
+        quantity: 128
+      - material: mangrove_log
+        quantity: 128
+      - material: cherry_log
+        quantity: 128
+      - material: crimson_stem
+        quantity: 128
+      - material: warped_stem
+        quantity: 128
+      - material: netherite_ingot
+        quantity: 1
+
+  netherite_axe:
+    - level: 0
+      exp: 4000000
+      required: 5
+      quest:
+      - material: oak_log
+        quantity: 192
+      - material: birch_log
+        quantity: 192
+      - material: spruce_log
+        quantity: 192
+      - material: dark_oak_log
+        quantity: 192
+      - material: acacia_log
+        quantity: 192
+      - material: jungle_log
+        quantity: 192
+      - material: mangrove_log
+        quantity: 192
+      - material: cherry_log
+        quantity: 192
+      - material: crimson_stem
+        quantity: 192
+      - material: warped_stem
+        quantity: 192
+
+sword:
+  wooden_sword:
+    - level: 0
+      exp: 20
+      required: 1
+      quest:
+      - material: beef
+        quantity: 1
+
+  stone_sword:
+    - level: 0
+      exp: 100
+      required: 1
+      quest:
+      - material: beef
+        quantity: 3
+      - material: porkchop
+        quantity: 3
+      - material: mutton
+        quantity: 3
+      - material: chicken
+        quantity: 3
+      - material: rotten_flesh
+        quantity: 3
+      - material: bone
+        quantity: 3
+      - material: string
+        quantity: 3
+
+  iron_sword:
+    - level: 0
+      exp: 600
+      required: 1
+      quest:
+      - material: beef
+        quantity: 8
+      - material: porkchop
+        quantity: 8
+      - material: mutton
+        quantity: 8
+      - material: chicken
+        quantity: 8
+      - material: rotten_flesh
+        quantity: 8
+      - material: bone
+        quantity: 8
+      - material: string
+        quantity: 8
+    - level: 1
+      exp: 2000
+      required: 1
+      quest:
+      - material: beef
+        quantity: 16
+      - material: porkchop
+        quantity: 16
+      - material: mutton
+        quantity: 16
+      - material: chicken
+        quantity: 16
+      - material: rotten_flesh
+        quantity: 16
+      - material: bone
+        quantity: 16
+      - material: string
+        quantity: 16
+      - material: gunpowder
+        quantity: 5
+      - material: spider_eye
+        quantity: 5
+      - material: leather
+        quantity: 8
+    - level: 2
+      exp: 4000
+      required: 1
+      quest:
+      - material: beef
+        quantity: 32
+      - material: porkchop
+        quantity: 32
+      - material: mutton
+        quantity: 32
+      - material: chicken
+        quantity: 32
+      - material: rotten_flesh
+        quantity: 32
+      - material: bone
+        quantity: 32
+      - material: string
+        quantity: 32
+      - material: gunpowder
+        quantity: 16
+      - material: spider_eye
+        quantity: 16
+      - material: leather
+        quantity: 16
+      - material: slime_ball
+        quantity: 16
+    - level: 3
+      exp: 14000
+      required: 1
+      quest:
+      - material: beef
+        quantity: 64
+      - material: porkchop
+        quantity: 64
+      - material: mutton
+        quantity: 64
+      - material: chicken
+        quantity: 64
+      - material: rotten_flesh
+        quantity: 64
+      - material: bone
+        quantity: 64
+      - material: string
+        quantity: 64
+      - material: gunpowder
+        quantity: 32
+      - material: spider_eye
+        quantity: 32
+      - material: leather
+        quantity: 32
+      - material: slime_ball
+        quantity: 32
+      - material: magma_cream
+        quantity: 32
+
+  diamond_sword:
+    - level: 0
+      exp: 30000
+      required: 2
+      quest:
+      - material: cooked_beef
+        quantity: 128
+      - material: cooked_porkchop
+        quantity: 128
+      - material: cooked_mutton
+        quantity: 128
+      - material: cooked_chicken
+        quantity: 128
+      - material: rotten_flesh
+        quantity: 128
+      - material: bone
+        quantity: 128
+      - material: string
+        quantity: 128
+      - material: gunpowder
+        quantity: 64
+      - material: spider_eye
+        quantity: 64
+      - material: leather
+        quantity: 64
+      - material: slime_ball
+        quantity: 64
+      - material: magma_cream
+        quantity: 64
+      - material: ender_pearl
+        quantity: 16
+      - material: blaze_rod
+        quantity: 16
+      - material: rabbit_foot
+        quantity: 1
+    - level: 1
+      exp: 80000
+      required: 2
+      quest:
+      - material: cooked_beef
+        quantity: 192
+      - material: cooked_porkchop
+        quantity: 192
+      - material: cooked_mutton
+        quantity: 192
+      - material: cooked_chicken
+        quantity: 192
+      - material: rotten_flesh
+        quantity: 192
+      - material: bone
+        quantity: 192
+      - material: string
+        quantity: 192
+      - material: gunpowder
+        quantity: 128
+      - material: spider_eye
+        quantity: 128
+      - material: leather
+        quantity: 128
+      - material: slime_ball
+        quantity: 128
+      - material: magma_cream
+        quantity: 128
+      - material: ender_pearl
+        quantity: 32
+      - material: blaze_rod
+        quantity: 32
+      - material: rabbit_foot
+        quantity: 3
+    - level: 2
+      exp: 200000
+      required: 11
+      quest:
+      - material: gunpowder
+        quantity: 64
+      - material: spider_eye
+        quantity: 64
+      - material: leather
+        quantity: 64
+      - material: slime_ball
+        quantity: 64
+      - material: magma_cream
+        quantity: 64
+      - material: ender_pearl
+        quantity: 64
+      - material: blaze_rod
+        quantity: 64
+      - material: rabbit_foot
+        quantity: 10
+      - material: wither_skeleton_skull
+        quantity: 3
+      - material: nether_star
+        quantity: 1
+      - material: netherite_ingot
+        quantity: 1
+
+  netherite_sword:
+    - level: 0
+      exp: 400000
+      required: 7
+      quest:
+      - material: gunpowder
+        quantity: 128
+      - material: spider_eye
+        quantity: 128
+      - material: leather
+        quantity: 128
+      - material: slime_ball
+        quantity: 128
+      - material: magma_cream
+        quantity: 128
+      - material: ender_pearl
+        quantity: 128
+      - material: blaze_rod
+        quantity: 128
+      - material: rabbit_foot
+        quantity: 64
+      - material: wither_skeleton_skull
+        quantity: 16
+      - material: nether_star
+        quantity: 5
+      
 shovel:
-  wood_shovel:
+  wooden_shovel:
     - level: 0
       exp: 20
       required: 1
@@ -261,6 +761,10 @@ shovel:
         quantity: 16
       - material: snow_block
         quantity: 32
+      - material: soul_sand
+        quantity: 64
+      - material: soul_soil
+        quantity: 64
     - level: 1
       exp: 600
       required: 2
@@ -275,12 +779,16 @@ shovel:
         quantity: 32
       - material: snow_block
         quantity: 64
+      - material: soul_sand
+        quantity: 128
+      - material: soul_soil
+        quantity: 128
     - level: 2
       exp: 1000
-      required: 5
+      required: 8
       quest:
       - material: dirt
-        quantity: 64
+        quantity: 128
       - material: white_concrete_powder
         quantity: 32
       - material: glass
@@ -289,14 +797,20 @@ shovel:
         quantity: 32
       - material: snow_block
         quantity: 64
+      - material: soul_sand
+        quantity: 128
+      - material: soul_soil
+        quantity: 128
+      - material: netherite_ingot
+        quantity: 1
 
   netherite_shovel:
     - level: 0
       exp: 2000
-      required: 5
+      required: 7
       quest:
       - material: dirt
-        quantity: 64
+        quantity: 128
       - material: white_concrete_powder
         quantity: 64
       - material: glass
@@ -305,4 +819,8 @@ shovel:
         quantity: 64
       - material: snow_block
         quantity: 64
+      - material: soul_sand
+        quantity: 128
+      - material: soul_soil
+        quantity: 128
         

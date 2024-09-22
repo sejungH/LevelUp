@@ -1,6 +1,5 @@
 package com.levelup.player;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,14 +13,17 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -41,13 +43,14 @@ import net.md_5.bungee.api.ChatColor;
 public class PlayerEvent implements Listener {
 
 	private LevelUp plugin;
-	private Connection conn;
+	
+	public static final String HOME_TICKET = "customitems:home_ticket";
+	public static final String SKIN_TICKET = "customitems:skin_ticket";
 
 	private Map<Player, List<ItemStack>> items;
 
 	public PlayerEvent(LevelUp plugin) {
 		this.plugin = plugin;
-		this.conn = plugin.mysql.getConnection();
 		this.items = new HashMap<Player, List<ItemStack>>();
 	}
 
@@ -57,10 +60,9 @@ public class PlayerEvent implements Listener {
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 
 		if (pd == null) {
-			PlayerController.addPlayer(plugin, conn, player);
-			
-			MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager()
-					.getPlugin("Multiverse-Core");
+			PlayerController.addPlayer(plugin, player);
+
+			MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
 			MVWorldManager worldManager = core.getMVWorldManager();
 			MultiverseWorld world = worldManager.getMVWorld("tutorial");
 			Location loc = world.getCBWorld().getBlockAt(96, 66, 176).getLocation();
@@ -73,9 +75,22 @@ public class PlayerEvent implements Listener {
 			PlayerController.updateLastOnline(plugin, player.getUniqueId());
 		}
 
-		ScoreboardController.displayScoreboard(plugin, player);
+		// tool box
+		CustomStack toolbox = CustomStack.getInstance(ToolController.TOOLBOX_ID);
+		player.getInventory().setItem(ToolController.TOOLBOX_SLOT, toolbox.getItemStack().clone());
+		if (!plugin.tools.containsKey(player.getUniqueId()))
+			ToolController.getNewTools(plugin, player);
+		
+		if (!plugin.quests.containsKey(player.getUniqueId()))
+			ToolController.initQuest(plugin, player.getUniqueId());
 
+		// tool bossbar
+		ToolController.getNewBossBars(plugin, player);
+
+		// tax message
 		VillageController.taxUpdateMessage(plugin, player);
+
+		// player list
 		PlayerController.updateListName(plugin, player);
 
 		String listHeader = "\n            "
@@ -83,26 +98,29 @@ public class PlayerEvent implements Listener {
 				+ "            \n";
 		player.setPlayerListHeader(listHeader);
 
+		int tick = (int) plugin.getServer().getServerTickManager().getTickRate();
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 
 			@Override
 			public void run() {
-				ScoreboardController.updateScoreboard(plugin, player);
+				ScoreboardController.displayScoreboard(plugin, player);
 				PlayerController.updateListFooter(plugin, player);
 			}
 
-		}, 0, 20);
+		}, 0, tick);
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) throws SQLException {
 		Player player = event.getPlayer();
 		PlayerController.updateLastOnline(plugin, player.getUniqueId());
+		ToolController.updateToolExp(plugin, player.getUniqueId());
 	}
 
 	@EventHandler
 	public void onPlayerHat(InventoryClickEvent event) {
-		if (event.getView().getTopInventory().getType().equals(InventoryType.CRAFTING)
+		if (event.getView().getTopInventory().getType() != null
+				&& event.getView().getTopInventory().getType().equals(InventoryType.CRAFTING)
 				&& event.getSlotType().equals(SlotType.ARMOR) && event.getSlot() == 39) {
 
 			if (event.getCursor() != null) {
@@ -129,8 +147,8 @@ public class PlayerEvent implements Listener {
 			if (!items.containsKey(player))
 				items.put(player, new ArrayList<ItemStack>());
 
-			if (tool.getPickaxe().equals(plugin, item) || tool.getAxe().equals(plugin, item)
-					|| tool.getSword().equals(plugin, item) || tool.getShovel().equals(plugin, item)) {
+			if (tool.getPickaxe().equals(item) || tool.getAxe().equals(item) || tool.getSword().equals(item)
+					|| tool.getShovel().equals(item)) {
 				items.get(player).add(item);
 				event.getDrops().remove(item);
 
@@ -167,7 +185,8 @@ public class PlayerEvent implements Listener {
 		List<Material> tool = Arrays.asList(Material.WOODEN_PICKAXE, Material.WOODEN_AXE, Material.WOODEN_SWORD,
 				Material.WOODEN_SHOVEL, Material.STONE_PICKAXE, Material.STONE_AXE, Material.STONE_SWORD,
 				Material.STONE_SHOVEL, Material.IRON_PICKAXE, Material.IRON_AXE, Material.IRON_SWORD,
-				Material.IRON_SHOVEL, Material.DIAMOND_PICKAXE, Material.DIAMOND_AXE, Material.DIAMOND_SWORD,
+				Material.IRON_SHOVEL, Material.GOLDEN_PICKAXE, Material.GOLDEN_AXE, Material.GOLDEN_SWORD,
+				Material.GOLDEN_SHOVEL, Material.DIAMOND_PICKAXE, Material.DIAMOND_AXE, Material.DIAMOND_SWORD,
 				Material.DIAMOND_SHOVEL, Material.NETHERITE_PICKAXE, Material.NETHERITE_AXE, Material.NETHERITE_SWORD,
 				Material.NETHERITE_SHOVEL);
 
@@ -188,6 +207,36 @@ public class PlayerEvent implements Listener {
 
 		} else if (event.getRecipe().getResult().getType().equals(Material.ENDER_CHEST)) {
 			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerUseItem(PlayerInteractEvent event) {
+		if (event.getHand() == EquipmentSlot.OFF_HAND)
+			return;
+		
+		if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			Player player = event.getPlayer();
+			CustomStack customItem = CustomStack.byItemStack(event.getItem());
+			if (customItem != null) {
+				if (customItem.getNamespacedID().equals(HOME_TICKET)) {
+					event.setCancelled(true);
+					if (player.getRespawnLocation() != null) {
+						Location respawn = player.getRespawnLocation();
+						player.teleport(respawn);
+						ItemStack item = event.getItem();
+						item.setAmount(item.getAmount() - 1);
+					} else {
+						player.sendMessage(ChatColor.RED + "마지막으로 사용한 침대가 파괴되었거나 존재하지 않습니다");
+					}
+					
+				} else if (customItem.getNamespacedID().equals(SKIN_TICKET)) {
+					event.setCancelled(true);
+					Inventory ticketInv = ToolController.getSkinTicketInventory(plugin, player);
+					player.openInventory(ticketInv);
+				}
+				
+			}
 		}
 	}
 

@@ -43,33 +43,39 @@ public class ChunkCommand implements CommandExecutor {
 				MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
 
 				if (args[0].equalsIgnoreCase("구매")) {
-					Chunk chunk = player.getLocation().getChunk();
 
-					PlayerData pd = plugin.players.get(player.getUniqueId());
-					if (pd.getVillage() > 0) {
-						sender.sendMessage(ChatColor.RED + "마을에 가입되어 있는 경우 청크를 구매할 수 없습니다");
+					if (world.getAlias().equalsIgnoreCase("world")) {
+						Chunk chunk = player.getLocation().getChunk();
 
-					} else if (ChunkController.checkPlayerChunkByPlayer(plugin, player, chunk)
-							&& ChunkController.checkVillageChunkByPlayer(plugin, player, chunk)) {
+						PlayerData pd = plugin.players.get(player.getUniqueId());
+						if (pd.getVillage() > 0) {
+							sender.sendMessage(ChatColor.RED + "마을에 가입되어 있는 경우 청크를 구매할 수 없습니다");
 
-						if (!plugin.playerChunks.containsKey(player.getUniqueId()))
-							plugin.playerChunks.put(player.getUniqueId(), new ArrayList<Chunk>());
+						} else if (ChunkController.checkPlayerChunkByPlayer(plugin, player, chunk)
+								&& ChunkController.checkVillageChunkByPlayer(plugin, player, chunk)) {
 
-						int price = (int) Math.round(ChunkController
-								.calculatePlayerChunkPrice(plugin.playerChunks.get(player.getUniqueId()).size()));
+							if (!plugin.playerChunks.containsKey(player.getUniqueId()))
+								plugin.playerChunks.put(player.getUniqueId(), new ArrayList<Chunk>());
 
-						if (pd.getBalance() >= price) {
-							MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
-							ChunkController.addPlayerChunk(plugin, player, chunk);
-							ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.GREEN, 5);
-							sender.sendMessage(ChatColor.GREEN + "청크를 성공적으로 구매했습니다  " + ChatColor.RESET
-									+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
-							player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+							int price = (int) Math.round(ChunkController
+									.calculatePlayerChunkPrice(plugin.playerChunks.get(player.getUniqueId()).size()));
 
-						} else {
-							sender.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET
-									+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+							if (pd.getBalance() >= price) {
+								MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
+								ChunkController.addPlayerChunk(plugin, player, chunk);
+								ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.GREEN, 5);
+								sender.sendMessage(ChatColor.GREEN + "청크를 성공적으로 구매했습니다  " + ChatColor.RESET
+										+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+								player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+							} else {
+								sender.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET
+										+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+							}
 						}
+						
+					} else {
+						player.sendMessage(ChatColor.RED + "이 월드에서는 실행할 수 없습니다");
 					}
 
 				} else if (args[0].equalsIgnoreCase("판매")) {
@@ -155,8 +161,9 @@ public class ChunkCommand implements CommandExecutor {
 							.getPlugin("Multiverse-Core");
 					MVWorldManager worldManager = core.getMVWorldManager();
 					MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
+					
 					if (world.getAlias().equalsIgnoreCase("world")) {
-						
+
 						PlayerData pd = PlayerController.getPlayerData(plugin, args[1]);
 
 						if (pd != null) {

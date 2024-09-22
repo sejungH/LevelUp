@@ -82,6 +82,8 @@ public class ChatController {
 	}
 
 	public static String gradient(String text, ChatColor start, ChatColor end) {
+		
+		text = ChatColor.stripColor(text);
 
 		Color color1 = start.getColor();
 		Color color2 = end.getColor();
@@ -117,6 +119,8 @@ public class ChatController {
 	}
 
 	public static String gradient(String text, List<ChatColor> colors) {
+		
+		text = ChatColor.stripColor(text);
 
 		int divisions = colors.size() - 1;
 		float divideEveryChars = text.length() / divisions > 0 ? (float) text.length() / divisions : 1;

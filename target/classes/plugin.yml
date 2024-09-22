@@ -4,7 +4,7 @@ author: EVa
 main: com.levelup.LevelUp
 api-version: 1.20
 
-softdepend: [PlaceholderAPI, CustomCrops, ItemsAdder, MythicMobs, Multiverse-Core]
+depend: [PlaceholderAPI, CustomCrops, ItemsAdder, MythicMobs, Multiverse-Core, NBTAPI, Citizens]
 
 commands:
     levelup:
@@ -39,3 +39,5 @@ commands:
         description: 유저의 닉네임을 변경합니다
     청크:
         description: 청크 관련 명령어
+    lvnpc:
+        description: npc 관련 명령어

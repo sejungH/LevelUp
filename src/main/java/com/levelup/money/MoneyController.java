@@ -22,9 +22,17 @@ import net.md_5.bungee.api.ChatColor;
 
 public class MoneyController {
 
-	public static final CustomStack GOLD = CustomStack.getInstance("customitems:gold");
-	public static final CustomStack SILVER = CustomStack.getInstance("customitems:silver");
-	public static final CustomStack COPPER = CustomStack.getInstance("customitems:copper");
+	public static enum MoneyItem {
+		GOLD, SILVER, COPPER;
+
+		public ItemStack getItemStack() {
+			return CustomStack.getInstance("customitems:" + this.name().toLowerCase()).getItemStack();
+		}
+
+		public String getNamespacedID() {
+			return "customitems:" + this.name().toLowerCase();
+		}
+	}
 
 	public static int depositAll(LevelUp plugin, Player player) {
 
@@ -35,15 +43,15 @@ public class MoneyController {
 		for (ItemStack i : player.getInventory()) {
 			CustomStack customStack = CustomStack.byItemStack(i);
 			if (customStack != null) {
-				if (customStack.getNamespacedID().equals(GOLD.getNamespacedID())) {
+				if (customStack.getNamespacedID().equals(MoneyItem.GOLD.getNamespacedID())) {
 					countGold += i.getAmount();
 					player.getInventory().remove(i);
 
-				} else if (customStack.getNamespacedID().equals(SILVER.getNamespacedID())) {
+				} else if (customStack.getNamespacedID().equals(MoneyItem.SILVER.getNamespacedID())) {
 					countSilver += i.getAmount();
 					player.getInventory().remove(i);
 
-				} else if (customStack.getNamespacedID().equals(COPPER.getNamespacedID())) {
+				} else if (customStack.getNamespacedID().equals(MoneyItem.COPPER.getNamespacedID())) {
 					countCopper += i.getAmount();
 					player.getInventory().remove(i);
 				}
@@ -52,7 +60,7 @@ public class MoneyController {
 
 		return countGold * 100 + countSilver * 10 + countCopper;
 	}
-	
+
 	public static void depoistMoeny(LevelUp plugin, int amount, UUID uuid) throws SQLException {
 		Connection conn = plugin.mysql.getConnection();
 
@@ -83,7 +91,7 @@ public class MoneyController {
 
 		pd.setBalance(pd.getBalance() - amount);
 	}
-	
+
 	public static String withLargeIntegers(double value) {
 		DecimalFormat df = new DecimalFormat("###,###,###");
 		return df.format(value);
@@ -129,22 +137,22 @@ public class MoneyController {
 
 		return amount;
 	}
-	
+
 	public static void updateDepositLore(Inventory inv) {
 		int amount = 0;
 
-		for (int i = 0; i < 5; i++) {
-			ItemStack item = inv.getItem(MenuController.slot(1, 2 + i));
+		for (int i = 0; i < 7; i++) {
+			ItemStack item = inv.getItem(MenuController.slot(2, 1 + i));
 			CustomStack customStack = CustomStack.byItemStack(item);
 
 			if (customStack != null) {
-				if (customStack.getNamespacedID().equals(MoneyController.GOLD.getNamespacedID())) {
+				if (customStack.getNamespacedID().equals(MoneyItem.GOLD.getNamespacedID())) {
 					amount += item.getAmount() * 100;
 
-				} else if (customStack.getNamespacedID().equals(MoneyController.SILVER.getNamespacedID())) {
+				} else if (customStack.getNamespacedID().equals(MoneyItem.SILVER.getNamespacedID())) {
 					amount += item.getAmount() * 10;
 
-				} else if (customStack.getNamespacedID().equals(MoneyController.COPPER.getNamespacedID())) {
+				} else if (customStack.getNamespacedID().equals(MoneyItem.COPPER.getNamespacedID())) {
 					amount += item.getAmount();
 
 				}
@@ -152,7 +160,7 @@ public class MoneyController {
 		}
 
 		for (ItemStack item : inv) {
-			if (item != null && item.getItemMeta().getDisplayName().contains("입금하기")) {
+			if (item != null && item.getItemMeta().getDisplayName().contains("입금")) {
 				ItemMeta itemMeta = item.getItemMeta();
 				List<String> itemLore = new ArrayList<String>();
 				itemLore.add(ChatColor.WHITE + "총 " + amount + " 코인을 입금합니다");
@@ -166,7 +174,7 @@ public class MoneyController {
 		int amount = getWithdrawAmount(inv);
 
 		for (ItemStack item : inv) {
-			if (item != null && item.getItemMeta().getDisplayName().contains("출금하기")) {
+			if (item != null && item.getItemMeta().getDisplayName().contains("출금")) {
 				ItemMeta itemMeta = item.getItemMeta();
 				List<String> itemLore = new ArrayList<String>();
 				itemLore.add(ChatColor.WHITE + "총 " + amount + " 코인을 출금합니다");

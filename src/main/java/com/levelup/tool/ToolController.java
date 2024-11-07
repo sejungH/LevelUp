@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +13,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Registry;
+import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
@@ -52,9 +52,14 @@ public class ToolController {
 
 	public static final String TOOLBOX_ID = "customitems:toolbox";
 	public static final int TOOLBOX_SLOT = 8;
+	public static final int COOL = 10;
 
 	public static Map<UUID, Map<ToolType, BossBar>> bossBars;
+	public static Map<BossBar, Long> cooldowns;
 	public static Map<UUID, List<ToolType>> MsgShown;
+
+	public static Map<UUID, BossBar> boostBars;
+	public static Map<UUID, Integer> boostMults;
 
 	public static Map<UUID, ToolData> getTools(LevelUp plugin) throws SQLException {
 		Connection conn = plugin.mysql.getConnection();
@@ -356,6 +361,105 @@ public class ToolController {
 		pstmt.close();
 	}
 
+	public static Map<UUID, Map<ToolType, List<String>>> getToolSkins(LevelUp plugin) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+
+		String sql = "SELECT * FROM tool_skin";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+
+		Map<UUID, Map<ToolType, List<String>>> toolSkins = new HashMap<UUID, Map<ToolType, List<String>>>();
+
+		while (rs.next()) {
+			UUID uuid = UUID.fromString(rs.getString("uuid"));
+
+			Map<ToolType, List<String>> tools = new HashMap<ToolType, List<String>>();
+
+			JsonArray pickaxeJson = JsonParser.parseString(rs.getString("pickaxe")).getAsJsonArray();
+			List<String> pickaxe = new ArrayList<String>();
+			for (JsonElement e : pickaxeJson) {
+				pickaxe.add(e.getAsString());
+			}
+			tools.put(ToolType.PICKAXE, pickaxe);
+
+			JsonArray axeJson = JsonParser.parseString(rs.getString("axe")).getAsJsonArray();
+			List<String> axe = new ArrayList<String>();
+			for (JsonElement e : axeJson) {
+				axe.add(e.getAsString());
+			}
+			tools.put(ToolType.AXE, axe);
+
+			JsonArray swordJson = JsonParser.parseString(rs.getString("sword")).getAsJsonArray();
+			List<String> sword = new ArrayList<String>();
+			for (JsonElement e : swordJson) {
+				sword.add(e.getAsString());
+			}
+			tools.put(ToolType.SWORD, sword);
+
+			JsonArray shovelJson = JsonParser.parseString(rs.getString("shovel")).getAsJsonArray();
+			List<String> shovel = new ArrayList<String>();
+			for (JsonElement e : shovelJson) {
+				shovel.add(e.getAsString());
+			}
+			tools.put(ToolType.SHOVEL, shovel);
+
+			toolSkins.put(uuid, tools);
+		}
+
+		rs.close();
+		pstmt.close();
+
+		plugin.getServer().getConsoleSender().sendMessage("[" + plugin.getName() + "] " + ChatColor.GREEN + "Loaded "
+				+ ChatColor.YELLOW + toolSkins.size() + ChatColor.GREEN + " Tool Skin Data");
+
+		return toolSkins;
+	}
+
+	public static void initToolSkin(LevelUp plugin, UUID uuid) throws SQLException {
+		Connection conn = plugin.mysql.getConnection();
+		String sql = "INSERT INTO tool_skin (uuid, pickaxe, axe, sword, shovel) VALUE (?, ?, ?, ?, ?)";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+
+		pstmt.setString(1, uuid.toString());
+		pstmt.setString(2, new JsonArray().toString());
+		pstmt.setString(3, new JsonArray().toString());
+		pstmt.setString(4, new JsonArray().toString());
+		pstmt.setString(5, new JsonArray().toString());
+		pstmt.executeUpdate();
+
+		pstmt.close();
+
+		Map<ToolType, List<String>> tools = new HashMap<ToolType, List<String>>();
+		tools.put(ToolType.PICKAXE, new ArrayList<String>());
+		tools.put(ToolType.AXE, new ArrayList<String>());
+		tools.put(ToolType.SWORD, new ArrayList<String>());
+		tools.put(ToolType.SHOVEL, new ArrayList<String>());
+
+		plugin.toolSkins.put(uuid, tools);
+	}
+
+	public static void updateToolSkin(LevelUp plugin, UUID uuid, ToolType type, String namespacedID)
+			throws SQLException {
+		if (!plugin.toolSkins.get(uuid).get(type).contains(namespacedID)) {
+			plugin.toolSkins.get(uuid).get(type).add(namespacedID);
+
+			Connection conn = plugin.mysql.getConnection();
+
+			JsonArray jsonArray = new JsonArray();
+			for (String n : plugin.toolSkins.get(uuid).get(type)) {
+				jsonArray.add(n);
+			}
+
+			String sql = "UPDATE tool_skin SET " + type.toString().toLowerCase() + " = ? WHERE uuid = ?";
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, jsonArray.toString());
+			pstmt.setString(2, uuid.toString());
+			pstmt.executeUpdate();
+
+			pstmt.close();
+		}
+	}
+
 	public static JsonObject convertQuestsToJson(Map<ToolType, Map<Material, Integer>> quests) {
 		JsonObject json = new JsonObject();
 
@@ -412,7 +516,7 @@ public class ToolController {
 		if (ToolType.get(tool.getMaterial()) != null) {
 			Connection conn = plugin.mysql.getConnection();
 
-			String sql = "UPDATE " + ToolType.get(tool.getMaterial()).toString()
+			String sql = "UPDATE " + tool.getType().toString()
 					+ " SET name = ?, material = ?, level = ?, exp = ?, enchantment = ?, customskin = ? WHERE uuid = ?";
 			PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -453,13 +557,23 @@ public class ToolController {
 		}
 	}
 
+	public static void updateAllToolExp(LevelUp plugin) throws SQLException {
+		int count = 0;
+		for (UUID uuid : plugin.tools.keySet()) {
+			PlayerData pd = plugin.players.get(uuid);
+			updateToolExp(plugin, pd.getUuid());
+			count++;
+		}
+		plugin.getLogger().info("Updated " + count + " Tool Exp");
+	}
+
 	public static void updateToolExp(LevelUp plugin) throws SQLException {
 		int count = 0;
 		for (UUID uuid : plugin.tools.keySet()) {
 			PlayerData pd = plugin.players.get(uuid);
 			OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
 
-			if (player.isOnline() || pd.getLastOnline().until(LocalDateTime.now(), ChronoUnit.MINUTES) < 10) {
+			if (player.isOnline()) {
 				updateToolExp(plugin, pd.getUuid());
 				count++;
 			}
@@ -530,6 +644,59 @@ public class ToolController {
 			bars.put(type, bossBar);
 		}
 		bossBars.put(player.getUniqueId(), bars);
+	}
+
+	public static void showBossBar(LevelUp plugin, Player player, ToolType type) {
+		BossBar bossBar = updateBossBar(plugin, player, type);
+
+		if (!bossBar.isVisible()) {
+			bossBar.setVisible(true);
+
+			activateCooldown(bossBar);
+
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+				@Override
+				public void run() {
+					if (hasCooldown(bossBar)) {
+						bossBar.setVisible(false);
+					}
+				}
+
+			}, 20 * COOL);
+		}
+	}
+
+	public static BossBar updateBossBar(LevelUp plugin, Player player, ToolType type) {
+		ToolAbstract tool = plugin.tools.get(player.getUniqueId()).getTool(type);
+
+		double percent = (double) tool.getExp() / (double) tool.getMaxExp();
+		if (percent >= 1.0) {
+			if (!MsgShown.containsKey(player.getUniqueId())) {
+				MsgShown.put(player.getUniqueId(), new ArrayList<ToolType>());
+			}
+
+			if (!MsgShown.get(player.getUniqueId()).contains(type)) {
+				player.sendMessage("(경험치 100% 메세지)");
+				player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+				MsgShown.get(player.getUniqueId()).add(type);
+			}
+
+			percent = 1.0;
+		}
+
+		BossBar bossBar = bossBars.get(player.getUniqueId()).get(type);
+		bossBar.setProgress(percent);
+
+		return bossBar;
+	}
+
+	public static void getNewBoostBars(LevelUp plugin, Player player) {
+		BossBar bossBar = Bukkit.createBossBar("경험치 이벤트", BarColor.PINK, BarStyle.SOLID, new BarFlag[0]);
+		bossBar.setVisible(false);
+		bossBar.addPlayer(player);
+		boostBars.put(player.getUniqueId(), bossBar);
+		boostMults.put(player.getUniqueId(), 1);
 	}
 
 	public static Inventory getSkinTicketInventory(LevelUp plugin, Player player) {
@@ -621,10 +788,13 @@ public class ToolController {
 						}
 
 						newName = ChatController.gradient(newName, gradient);
+
+					} else {
+						newName = ChatColor.stripColor(newName);
 					}
 
-					LevelUpIcon icon = LevelUpIcon.valueOf(prefix.toUpperCase());
-					if (icon != null) {
+					if (EnumUtils.isValidEnum(LevelUpIcon.class, prefix.toUpperCase())) {
+						LevelUpIcon icon = LevelUpIcon.valueOf(prefix.toUpperCase());
 						newName = ChatColor.WHITE + Character.toString(icon.val()) + " " + newName;
 					}
 
@@ -632,6 +802,7 @@ public class ToolController {
 				});
 
 				updateToolData(plugin, uuid, tool);
+				updateToolSkin(plugin, uuid, ToolType.get(toolType), namespacedID);
 
 				if (slot >= 0) {
 					playerInv.clear(slot);
@@ -700,7 +871,7 @@ public class ToolController {
 						CustomStack customItem = CustomStack.getInstance(newToolSkin);
 						NBT.get(customItem.getItemStack(), nbt -> {
 							String name = ChatColor.stripColor(tool.getName());
-							String regexName = "(.) (나무|돌|철|다이아몬드|네더라이트) (곡괭이|도끼|검|삽)";
+							String regexName = "(.?)\s*(나무|돌|철|다이아몬드|네더라이트) (곡괭이|도끼|검|삽)";
 							Pattern patternName = Pattern.compile(regexName);
 							Matcher matcherName = patternName.matcher(name);
 
@@ -788,5 +959,17 @@ public class ToolController {
 
 		matcher.appendTail(decodedString);
 		return decodedString.toString();
+	}
+
+	public static boolean hasCooldown(BossBar bossBar) {
+		if (cooldowns.get(bossBar) < (System.currentTimeMillis() - (COOL - 1) * 1000)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static void activateCooldown(BossBar bossBar) {
+		cooldowns.put(bossBar, System.currentTimeMillis());
 	}
 }

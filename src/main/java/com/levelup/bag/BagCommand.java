@@ -84,7 +84,7 @@ public class BagCommand implements CommandExecutor {
 										}
 
 									} else {
-										sender.sendMessage(ChatColor.RED + args[2] + " 은(는) 존재하지 않는 유저입니다.");
+										sender.sendMessage(ChatColor.RED + args[2] + " 은(는) 존재하지 않는 유저입니다");
 									}
 
 								} else {

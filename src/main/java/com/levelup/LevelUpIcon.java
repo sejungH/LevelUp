@@ -2,7 +2,7 @@ package com.levelup;
 
 public enum LevelUpIcon {
 	
-	FROG('\uECA0'),
+	LOGO('\uECA0'),
 	VILLAGE('\uECA1'),
 	COIN('\uECA2'),
 	CHAT('\uECA3'),
@@ -14,6 +14,9 @@ public enum LevelUpIcon {
 	MAIL('\uECA9'),
 	ADMIN('\uECAA'),
 	WORLD('\uECAB'),
+
+	ONLINE('\uECAC'),
+	OFFLINE('\uECAD'),
 	
 	// 캐시 도구 아이콘
 	NEKO('\uECC0'),

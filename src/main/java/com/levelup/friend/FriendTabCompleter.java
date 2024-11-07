@@ -25,41 +25,28 @@ public class FriendTabCompleter implements TabCompleter {
 		List<String> list = new ArrayList<String>();
 
 		try {
-			if (sender instanceof Player) {
-				Player player = (Player) sender;
-				if (args.length == 1) {
-					list.add("신청");
-					list.add("수락");
-					list.add("거절");
-					list.add("삭제");
-					list.add("신청함");
-					list.add("목록");
-
-					return list;
-
-				} else if (args.length == 2) {
-
-					if (args[0].equalsIgnoreCase("신청")) {
-						
-						return PlayerController.getOnlinePlayerNames(plugin);
-						
-					} else if (args[0].equalsIgnoreCase("수락") || args[0].equalsIgnoreCase("거절")) {
-						List<PlayerData> requests = FriendController.getRequests(plugin, player.getName());
-						for (PlayerData pd : requests) {
-							list.add(pd.getUsername());
-						}
-						
+			if (sender instanceof Player player) {
+				if (label.equalsIgnoreCase("친구")) {
+					if (args.length == 1) {
+						list.add("신청");
 						return list;
-						
-					} else if (args[0].equalsIgnoreCase("삭제")) {
-						List<PlayerData> friends = FriendController.getFriendList(plugin, player.getName());
-						for (PlayerData pd : friends) {
-							list.add(pd.getUsername());
-						}
-						
+
+					} else if (args.length == 2 && args[0].equalsIgnoreCase("신청")) {
+						list.addAll(PlayerController.getOnlinePlayerNames(plugin));
+						PlayerData pd = plugin.players.get(player.getUniqueId());
+						list.remove(pd.getName());
+						return list;
+					}
+					
+				} else if (label.equalsIgnoreCase("차단")) {
+					if (args.length == 1) {
+						list.addAll(PlayerController.getOnlinePlayerNames(plugin));
+						PlayerData pd = plugin.players.get(player.getUniqueId());
+						list.remove(pd.getName());
 						return list;
 					}
 				}
+
 			}
 
 		} catch (Exception e) {
@@ -68,7 +55,5 @@ public class FriendTabCompleter implements TabCompleter {
 
 		return list;
 	}
-	
-	
 
 }

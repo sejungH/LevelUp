@@ -18,6 +18,10 @@ public enum MenuIcon {
 	EIGHT("eight"),
 	NINE("nine"),
 	
+	VILLAGE("village"),
+	FROG("frog"),
+	CHEST("chest"),
+	
 	PREV("prev"),
 	NEXT("next"),
 	
@@ -29,11 +33,15 @@ public enum MenuIcon {
 	public final CustomStack instance;
 	
 	MenuIcon(String id) {
-		this.instance = CustomStack.getInstance("customitems:" + id);
+		instance = CustomStack.getInstance("customitems:" + id);
 	}
 	
 	public CustomStack val() {
-		return this.instance;
+		return instance;
+	}
+	
+	public String namespacedID() {
+		return instance.getNamespacedID();
 	}
 	
 }

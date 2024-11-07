@@ -59,4 +59,9 @@ public class PickaxeData extends ToolAbstract {
 		return 0;
 	}
 
+	@Override
+	public ToolType getType() {
+		return ToolType.PICKAXE;
+	}
+
 }

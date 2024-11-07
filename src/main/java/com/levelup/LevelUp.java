@@ -41,8 +41,11 @@ import com.levelup.friend.FriendController;
 import com.levelup.friend.FriendData;
 import com.levelup.friend.FriendTabCompleter;
 import com.levelup.menu.MenuEvent;
+import com.levelup.message.MessageController;
 import com.levelup.money.MoneyCommand;
 import com.levelup.npc.NPCCommand;
+import com.levelup.npc.NPCController;
+import com.levelup.npc.NPCController.NPCMythic;
 import com.levelup.npc.NPCEvent;
 import com.levelup.npc.NPCTabCompleter;
 import com.levelup.player.PlayerCommand;
@@ -50,9 +53,16 @@ import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 import com.levelup.player.PlayerEvent;
 import com.levelup.player.PlayerTabCompleter;
+import com.levelup.post.PostController;
+import com.levelup.post.PostEvent;
 import com.levelup.ride.RideCommand;
 import com.levelup.ride.RideEvent;
 import com.levelup.ride.RideTabCompleter;
+import com.levelup.seasonpass.SeasonPassCommand;
+import com.levelup.seasonpass.SeasonPassController;
+import com.levelup.seasonpass.SeasonPassController.SeasonPass;
+import com.levelup.seasonpass.SeasonPassTabCompleter;
+import com.levelup.shopping.ShoppingController;
 import com.levelup.tool.ToolCommand;
 import com.levelup.tool.ToolController;
 import com.levelup.tool.ToolData;
@@ -66,32 +76,42 @@ import com.levelup.village.VillageController;
 import com.levelup.village.VillageData;
 import com.levelup.village.VillageEvent;
 import com.levelup.village.VillageTabCompleter;
+import com.levelup.warp.WarpEvent;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class LevelUp extends JavaPlugin {
 
 	public static final String CONFIG_PATH = "plugins/LevelUp/";
-	public static final String[] CONFIG_FILES = { "cooking_ingredients.yml", "cooking_recipes.yml", "tool_exp.yml",
-			"tool_quest_items.yml", "tool_quest_message.yml", "tool_quest.yml" };
+	public static final String[] CONFIG_FILES = { "tool_exp.yml", "tool_quest_items.yml", "tool_quest_message.yml",
+			"tool_quest.yml", "cooking_ingredients.yml", "cooking_recipes.yml", "shopping_items.yml", "npc_shop.yml",
+			"seasonpass_items.yml", "cash_items.yml" };
 
 	public MySQLConnect mysql;
 
 	public Map<UUID, PlayerData> players;
 	public Map<Integer, VillageData> villages;
+	public Map<UUID, Integer> villageApplies;
 	public List<FriendData> friends;
+	public Map<UUID, List<UUID>> userBlocks;
 	public Map<UUID, ToolData> tools;
 	public Map<UUID, List<ItemStack>> bags;
 	public Map<UUID, List<Chunk>> playerChunks;
 	public Map<Integer, List<Chunk>> villageChunks;
 	public Map<UUID, Map<ToolType, Map<Material, Integer>>> quests;
+	public Map<UUID, SeasonPass> seasonPassData;
 
 	public Map<ToolType, Map<Material, List<ToolQuest>>> toolQuest;
 	public Map<ToolType, Map<Material, Integer>> toolExp;
 	public Map<Material, Entry<Character, String>> toolQuestItems;
 	public Map<ToolType, Map<Material, List<ToolQuestMessage>>> toolQuestMessage;
+	public Map<UUID, Map<ToolType, List<String>>> toolSkins;
 	public List<Recipe> cookingRecipes;
-	public Map<String, List<LevelUpItem>> cookingIngredients;
+	public Map<String, Map<LevelUpItem, LevelUpItem>> cookingIngredients;
+	public Map<LevelUpItem, Integer> shoppingItems;
+	public Map<NPCMythic, Map<LevelUpItem, Integer>> npcShopItems;
+	public List<Entry<LevelUpItem, Boolean>> seasonPassItems;
+	public List<String> cashItems;
 
 	@Override
 	public void onEnable() {
@@ -142,6 +162,8 @@ public class LevelUp extends JavaPlugin {
 
 		getCommand("친구").setTabCompleter(new FriendTabCompleter(this));
 		getCommand("친구").setExecutor(new FriendCommand(this));
+		getCommand("차단").setTabCompleter(new FriendTabCompleter(this));
+		getCommand("차단").setExecutor(new FriendCommand(this));
 
 		getCommand("입금").setExecutor(new MoneyCommand(this));
 		getCommand("출금").setExecutor(new MoneyCommand(this));
@@ -163,7 +185,7 @@ public class LevelUp extends JavaPlugin {
 		getCommand("ride").setTabCompleter(new RideTabCompleter(this));
 		getCommand("ride").setExecutor(new RideCommand(this));
 
-		getCommand("t").setTabCompleter(new ToolTabCompleter(this));
+		getCommand("t").setTabCompleter(new ToolTabCompleter());
 		getCommand("t").setExecutor(new ToolCommand(this));
 
 		getCommand("bag").setTabCompleter(new BagTabCompleter(this));
@@ -171,7 +193,9 @@ public class LevelUp extends JavaPlugin {
 
 		getCommand("청크").setTabCompleter(new ChunkTabCompleter(this));
 		getCommand("청크").setExecutor(new ChunkCommand(this));
-
+		
+		getCommand("seasonpass").setTabCompleter(new SeasonPassTabCompleter(this));
+		getCommand("seasonpass").setExecutor(new SeasonPassCommand(this));
 	}
 
 	public void initEvents() {
@@ -188,6 +212,8 @@ public class LevelUp extends JavaPlugin {
 		pm.registerEvents(new BagEvent(this), this);
 		pm.registerEvents(new ChunkEvent(this), this);
 		pm.registerEvents(new CookingEvent(this), this);
+		pm.registerEvents(new PostEvent(this), this);
+		pm.registerEvents(new WarpEvent(), this);
 	}
 
 	public void initDB() throws SQLException {
@@ -199,11 +225,17 @@ public class LevelUp extends JavaPlugin {
 	public void loadDB() throws SQLException {
 		players = PlayerController.getPlayers(this);
 		villages = VillageController.getVillages(this);
+		villageApplies = VillageController.getVillageApplies(this);
 		friends = FriendController.getFriends(this);
+		userBlocks = FriendController.getUserBlocks(this);
 		tools = ToolController.getTools(this);
 		quests = ToolController.getQuests(this);
+		toolSkins = ToolController.getToolSkins(this);
 		playerChunks = ChunkController.getPlayerChunks(this);
 		villageChunks = ChunkController.getVillageChunks(this);
+		seasonPassData = SeasonPassController.getSeasonPassData(this);
+		MessageController.getPendingMessages(this);
+		PostController.getPostItems(this);
 	}
 
 	public void initConfig() throws IOException {
@@ -262,6 +294,26 @@ public class LevelUp extends JavaPlugin {
 				cookingIngredients = CookingController.parseCookingIngredients(yaml.load(fileInput));
 				this.getServer().getConsoleSender()
 						.sendMessage("[" + this.getName() + "] " + ChatColor.GREEN + "Loaded Cooking Ingredient Data");
+
+			} else if (filename.equals("shopping_items.yml")) {
+				shoppingItems = ShoppingController.parseShoppingItems(yaml.load(fileInput));
+				this.getServer().getConsoleSender()
+						.sendMessage("[" + this.getName() + "] " + ChatColor.GREEN + "Loaded Shopping Item Data");
+				
+			} else if (filename.equals("npc_shop.yml")) {
+				npcShopItems = NPCController.parseNPCShopItems(yaml.load(fileInput));
+				this.getServer().getConsoleSender()
+						.sendMessage("[" + this.getName() + "] " + ChatColor.GREEN + "Loaded NPC Shop Item Data");
+
+			} else if (filename.equals("seasonpass_items.yml")) {
+				seasonPassItems = SeasonPassController.parseSeasonPassItems(yaml.load(fileInput));
+				this.getServer().getConsoleSender()
+						.sendMessage("[" + this.getName() + "] " + ChatColor.GREEN + "Loaded Season Pass Item Data");
+
+			} else if (filename.equals("cash_items.yml")) {
+				cashItems = LevelUpController.parseCashItems(yaml.load(fileInput));
+				this.getServer().getConsoleSender()
+						.sendMessage("[" + this.getName() + "] " + ChatColor.GREEN + "Loaded Cash Item Data");
 			}
 		}
 
@@ -285,7 +337,7 @@ public class LevelUp extends JavaPlugin {
 					VillageController.checkDeletionPeriod(plugin);
 					VillageController.checkTaxOverdue(plugin);
 					PlayerController.checkRestUser(plugin);
-					VillageController.updateTax(plugin);
+					VillageController.updateTaxWeekly(plugin);
 
 					if (counter % 5 == 0)
 						ToolController.updateToolExp(plugin);
@@ -307,6 +359,6 @@ public class LevelUp extends JavaPlugin {
 		for (Player player : this.getServer().getOnlinePlayers()) {
 			PlayerController.updateLastOnline(this, player.getUniqueId());
 		}
-		ToolController.updateToolExp(this);
+		ToolController.updateAllToolExp(this);
 	}
 }

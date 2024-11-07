@@ -14,13 +14,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -31,11 +30,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.levelup.LevelUp;
+import com.levelup.LevelUpItem;
 import com.levelup.chunk.ChunkController;
 import com.levelup.menu.MenuController;
 import com.levelup.menu.MenuUnicode;
-import com.levelup.tool.ToolController;
-import com.levelup.tool.ToolData;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MVWorldManager;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
@@ -46,6 +44,7 @@ import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import net.md_5.bungee.api.ChatColor;
 
 public class CookingEvent implements Listener {
 
@@ -67,7 +66,7 @@ public class CookingEvent implements Listener {
 			MVWorldManager worldManager = core.getMVWorldManager();
 			MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
 
-			if (world.getAlias().equalsIgnoreCase("world")) {
+			if (player.isOp()|| world.getAlias().equalsIgnoreCase("world")) {
 				ItemStack item = player.getInventory().getItemInMainHand();
 				CustomStack customItem = CustomStack.byItemStack(item);
 
@@ -129,15 +128,21 @@ public class CookingEvent implements Listener {
 			ActiveMob mob = MythicBukkit.inst().getMobManager().getMythicMobInstance(entity);
 
 			if ((mob.getType().getInternalName().equalsIgnoreCase(CookingController.POT_MYTHIC)
-					|| mob.getType().getInternalName().equalsIgnoreCase(CookingController.CHOPPING_BOARD_MYTHIC)
-							&& mob.getStance().equals("default"))) {
+					|| mob.getType().getInternalName().equalsIgnoreCase(CookingController.CHOPPING_BOARD_MYTHIC))
+					&& mob.getStance().equals("default")) {
 				event.setCancelled(true);
 
 				if (mob.getType().getInternalName().equalsIgnoreCase(CookingController.POT_MYTHIC)) {
-					player.openInventory(CookingController.getPotInventory(plugin, player, entity));
+					NamespacedKey isUsing = new NamespacedKey(plugin, "is_using");
+					if (!entity.getPersistentDataContainer().has(isUsing)) {
+						entity.getPersistentDataContainer().set(isUsing, PersistentDataType.BOOLEAN, true);
+						player.openInventory(CookingController.getPotInventory(plugin, player, entity));
+					} else {
+						player.sendMessage(ChatColor.RED + "누군가가 이미 사용중입니다");
+					}
 
 				} else if (mob.getType().getInternalName().equalsIgnoreCase(CookingController.CHOPPING_BOARD_MYTHIC)) {
-					CookingController.chopIngredient(plugin, player, mob);
+					CookingController.chopIngredient(plugin, player, entity);
 				}
 			}
 		}
@@ -155,8 +160,17 @@ public class CookingEvent implements Listener {
 
 				if (event.getClickedInventory().equals(potInv)) {
 
-					if (CookingController.POT_INGREDIENT.contains(event.getSlot()))
+					if (CookingController.POT_INGREDIENT.contains(event.getSlot())) {
+						if (event.getAction() == InventoryAction.PLACE_ALL
+								|| event.getAction() == InventoryAction.PLACE_ONE
+								|| event.getAction() == InventoryAction.PLACE_SOME) {
+							LevelUpItem lvItem = new LevelUpItem(event.getCursor());
+
+							if (!CookingController.ingredients.contains(lvItem))
+								event.setCancelled(true);
+						}
 						return;
+					}
 
 					if (CookingController.POT_FUEL == event.getSlot()
 							&& (event.getCursor() == null || event.getCursor().getType() == Material.AIR
@@ -170,74 +184,68 @@ public class CookingEvent implements Listener {
 					}
 
 				} else if (event.getClickedInventory().equals(playerInv)) {
-
-					if (event.getSlot() == ToolController.TOOLBOX_SLOT) {
-						event.isCancelled();
-						return;
-					}
-
-					if (item != null && (event.getClick().equals(ClickType.SHIFT_LEFT)
-							|| event.getClick().equals(ClickType.SHIFT_RIGHT))) {
+					if (item != null && event.isShiftClick()) {
 						event.setCancelled(true);
+						LevelUpItem lvItem = new LevelUpItem(item);
 
-						ToolData toolData = plugin.tools.get(player.getUniqueId());
-						if (toolData.getPickaxe().equals(item) || toolData.getAxe().equals(item)
-								|| toolData.getSword().equals(item) || toolData.getSword().equals(item))
-							return;
+						if (!CookingController.ingredients.contains(lvItem)) {
 
-						if (CookingController.FUELS.contains(item.getType())) {
-							ItemStack potFuel = potInv.getItem(CookingController.POT_FUEL);
+							if (CookingController.FUELS.contains(item.getType())) {
+								ItemStack potFuel = potInv.getItem(CookingController.POT_FUEL);
 
-							if (potFuel == null) {
-								potInv.setItem(CookingController.POT_FUEL, item);
-								item.setAmount(0);
-
-							} else if (potFuel.getType().equals(item.getType())
-									&& potFuel.getItemMeta().equals(item.getItemMeta()) && potFuel.getAmount() < 64) {
-
-								if (item.getAmount() + potFuel.getAmount() > 64) {
-									item.setAmount(64 - potFuel.getAmount());
-									potFuel.setAmount(64);
-									return;
-
-								} else {
-									potFuel.setAmount(potFuel.getAmount() + item.getAmount());
+								if (potFuel == null) {
+									potInv.setItem(CookingController.POT_FUEL, item);
 									item.setAmount(0);
+
+								} else if (potFuel.getType().equals(item.getType())
+										&& potFuel.getItemMeta().equals(item.getItemMeta())
+										&& potFuel.getAmount() < 64) {
+
+									if (item.getAmount() + potFuel.getAmount() > 64) {
+										item.setAmount(64 - potFuel.getAmount());
+										potFuel.setAmount(64);
+										return;
+
+									} else {
+										potFuel.setAmount(potFuel.getAmount() + item.getAmount());
+										item.setAmount(0);
+									}
 								}
 							}
-						}
 
-						for (Integer s : CookingController.POT_INGREDIENT) {
-							ItemStack potItem = potInv.getItem(s);
-
-							if (potItem != null && potItem.getType().equals(item.getType())
-									&& potItem.getItemMeta().equals(item.getItemMeta()) && potItem.getAmount() < 64) {
-
-								if (item.getAmount() + potItem.getAmount() > 64) {
-									item.setAmount(64 - potItem.getAmount());
-									potItem.setAmount(64);
-
-								} else {
-									potItem.setAmount(potItem.getAmount() + item.getAmount());
-									item.setAmount(0);
-									break;
-								}
-							}
-						}
-
-						if (item.getAmount() > 0) {
+						} else {
 							for (Integer s : CookingController.POT_INGREDIENT) {
 								ItemStack potItem = potInv.getItem(s);
 
-								if (potItem == null) {
-									potInv.setItem(s, item);
-									item.setAmount(0);
-									break;
-								}
+								if (potItem != null && potItem.getType().equals(item.getType())
+										&& potItem.getItemMeta().equals(item.getItemMeta())
+										&& potItem.getAmount() < 64) {
 
+									if (item.getAmount() + potItem.getAmount() > 64) {
+										item.setAmount(64 - potItem.getAmount());
+										potItem.setAmount(64);
+
+									} else {
+										potItem.setAmount(potItem.getAmount() + item.getAmount());
+										item.setAmount(0);
+										break;
+									}
+								}
+							}
+
+							if (item.getAmount() > 0) {
+								for (Integer s : CookingController.POT_INGREDIENT) {
+									ItemStack potItem = potInv.getItem(s);
+
+									if (potItem == null) {
+										potInv.setItem(s, item);
+										item.setAmount(0);
+										break;
+									}
+
+								}
 							}
 						}
-
 					}
 
 				}
@@ -300,6 +308,7 @@ public class CookingEvent implements Listener {
 
 			NamespacedKey invKey = new NamespacedKey(plugin, "inventory");
 			entity.getPersistentDataContainer().set(invKey, PersistentDataType.STRING, jsonArray.toString());
+			entity.getPersistentDataContainer().remove(new NamespacedKey(plugin, "is_using"));
 		}
 	}
 
@@ -332,12 +341,12 @@ public class CookingEvent implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
-		Player player = event.getPlayer();
-		if (player.getOpenInventory() != null) {
-			event.setCancelled(true);
-		}
-	}
+//	@EventHandler
+//	public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
+//		Player player = event.getPlayer();
+//		if (player.getOpenInventory() != null) {
+//			event.setCancelled(true);
+//		}
+//	}
 
 }

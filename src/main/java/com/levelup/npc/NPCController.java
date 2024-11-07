@@ -3,6 +3,8 @@ package com.levelup.npc;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -12,10 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -31,6 +33,7 @@ import com.levelup.LevelUpItem;
 import com.levelup.menu.MenuController;
 import com.levelup.menu.MenuIcon;
 import com.levelup.menu.MenuUnicode;
+import com.levelup.money.MoneyController.MoneyItem;
 import com.levelup.tool.ToolAbstract;
 import com.levelup.tool.ToolController;
 import com.levelup.tool.ToolData;
@@ -38,6 +41,8 @@ import com.levelup.tool.ToolQuest;
 import com.levelup.tool.ToolQuestMessage;
 import com.levelup.tool.ToolType;
 
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -46,22 +51,57 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 
 public class NPCController {
 
-	public static final String BLACKSMITH = "NPC_BLACKSMITH";
+	public static enum NPCMythic {
+		BLACKSMITH, CITYHALL, FLOWER_SHOP, BLOCK_SHOP, DECO_SHOP, RIDING_SHOP, FISHING_SHOP, FURNITURE_SHOP, FARMER_SHOP, FARMER_2_SHOP,
+		MINING_SHOP, COOK_SHOP, COOK_2_SHOP;
+
+		public static boolean contains(String name) {
+			try {
+				NPCMythic.valueOf(name.toUpperCase());
+				return true;
+			} catch (IllegalArgumentException e) {
+				return false;
+			}
+		}
+
+		@Override
+		public String toString() {
+			return "NPC_" + this.name().toUpperCase();
+		}
+	}
+
 	public static final String SPACE = "                        ";
+	public static final Map<EquipmentSlot, Integer> INV_SLOT = Map.of(EquipmentSlot.HEAD, MenuController.slot(0, 4),
+			EquipmentSlot.CHEST, MenuController.slot(1, 4), EquipmentSlot.LEGS, MenuController.slot(2, 4),
+			EquipmentSlot.FEET, MenuController.slot(3, 4), EquipmentSlot.OFF_HAND, MenuController.slot(1, 2),
+			EquipmentSlot.HAND, MenuController.slot(1, 6));
 
-	public static void configureNPC(LevelUp plugin, LivingEntity entity, boolean setAI, String disguise) {
+	@SuppressWarnings({ "unchecked" })
+	public static Map<NPCMythic, Map<LevelUpItem, Integer>> parseNPCShopItems(Map<String, Object> yaml) {
+		Map<NPCMythic, Map<LevelUpItem, Integer>> npcShopItems = new LinkedHashMap<NPCMythic, Map<LevelUpItem, Integer>>();
 
-		entity.setAI(setAI);
-		entity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
-		entity.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);
-		entity.setCanPickupItems(false);
-		entity.setInvulnerable(true);
-		entity.setPersistent(true);
-		entity.setCollidable(false);
-		entity.setSilent(true);
+		for (Entry<String, Object> entry : yaml.entrySet()) {
+			NPCMythic type = NPCMythic.valueOf(entry.getKey().toUpperCase());
+			List<Object> itemObjs = (List<Object>) entry.getValue();
+			Map<LevelUpItem, Integer> shopItems = new HashMap<LevelUpItem, Integer>();
 
-		NamespacedKey npcKey = new NamespacedKey(plugin, "npc");
-		entity.getPersistentDataContainer().set(npcKey, PersistentDataType.BOOLEAN, true);
+			for (Object itemObj : itemObjs) {
+				Map<String, Object> item = (Map<String, Object>) itemObj;
+				String material = item.get("material") == null ? null : item.get("material").toString().toUpperCase();
+				String namespacedID = item.get("namespacedID") == null ? null : item.get("namespacedID").toString();
+				int amount = Integer.parseInt(item.get("amount").toString());
+				int price = Integer.parseInt(item.get("price").toString());
+				shopItems.put(new LevelUpItem(material, namespacedID, amount), price);
+
+				if (namespacedID != null) {
+					shopItems.put(new LevelUpItem(material, namespacedID + "_silver_star", amount), price * 2);
+					shopItems.put(new LevelUpItem(material, namespacedID + "_golden_star", amount), price * 3);
+				}
+			}
+			npcShopItems.put(type, shopItems);
+		}
+
+		return npcShopItems;
 	}
 
 	public static Inventory getFirstNPCInventory(LevelUp plugin, Player player, UUID uuid) {
@@ -132,9 +172,17 @@ public class NPCController {
 		nextPage.setItemMeta(nextPageIM);
 		npcInv.setItem(53, nextPage);
 
+		String json = null;
+		NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 		NamespacedKey tradeKey = new NamespacedKey(plugin, "levelup_npc_trade");
 		if (entity.getPersistentDataContainer().has(tradeKey, PersistentDataType.STRING)) {
-			String json = entity.getPersistentDataContainer().get(tradeKey, PersistentDataType.STRING);
+			json = entity.getPersistentDataContainer().get(tradeKey, PersistentDataType.STRING);
+
+		} else if (npc != null && npc.data().has("levelup_npc_trade")) {
+			json = npc.data().get("levelup_npc_trade");
+		}
+
+		if (json != null) {
 			JsonArray jsonArray = JsonParser.parseString(json).getAsJsonArray();
 
 			int row = 0;
@@ -161,7 +209,6 @@ public class NPCController {
 					col = 5;
 				}
 			}
-
 		}
 
 		return npcInv;
@@ -184,9 +231,17 @@ public class NPCController {
 		prevPage.setItemMeta(prevPageIM);
 		npcInv.setItem(45, prevPage);
 
+		String json = null;
+		NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 		NamespacedKey tradeKey = new NamespacedKey(plugin, "levelup_npc_trade");
 		if (entity.getPersistentDataContainer().has(tradeKey, PersistentDataType.STRING)) {
-			String json = entity.getPersistentDataContainer().get(tradeKey, PersistentDataType.STRING);
+			json = entity.getPersistentDataContainer().get(tradeKey, PersistentDataType.STRING);
+
+		} else if (npc != null && npc.data().has("levelup_npc_trade")) {
+			json = npc.data().get("levelup_npc_trade");
+		}
+
+		if (json != null) {
 			JsonArray jsonArray = JsonParser.parseString(json).getAsJsonArray();
 
 			int row = 0;
@@ -253,6 +308,7 @@ public class NPCController {
 
 		msg[3] = new TextComponent(pickaxe, axe, sword, shovel);
 
+		showBlankBefore(player);
 		showBlacksmithMessage(player, msg);
 	}
 
@@ -305,8 +361,10 @@ public class NPCController {
 				msg[2] = new TextComponent();
 				msg[3] = new TextComponent();
 				for (Entry<Material, Integer> q : quest.entrySet()) {
-					if (count != 0 && count != 6) {
-						msg[2].addExtra(", ");
+					if (count > 0 && count < 6) {
+						msg[2].addExtra("  ");
+					} else if (count > 6) {
+						msg[3].addExtra("  ");
 					}
 					Entry<Character, String> item = plugin.toolQuestItems.get(q.getKey());
 
@@ -366,7 +424,6 @@ public class NPCController {
 				}
 
 				showBlacksmithMessage(player, msg);
-				player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
 
 				for (Entry<Material, Integer> q : quest.entrySet()) {
 					int amount = q.getValue();
@@ -389,8 +446,12 @@ public class NPCController {
 				tool.setExp(tool.getExp() - requiredExp);
 				ToolController.toolUpgrade(plugin, player, type);
 
+				player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+				ToolController.updateBossBar(plugin, player, type);
+
 				quest.clear();
 				ToolController.updateQuest(plugin, player.getUniqueId());
+				showQuestMessage(plugin, player, type);
 
 				if (ToolController.MsgShown.get(player.getUniqueId()).contains(type)) {
 					ToolController.MsgShown.get(player.getUniqueId()).remove(type);
@@ -407,8 +468,10 @@ public class NPCController {
 				msg[2] = new TextComponent();
 				msg[3] = new TextComponent();
 				for (Entry<Material, Integer> q : quest.entrySet()) {
-					if (count != 0 && count != 6) {
+					if (count > 0 && count < 6) {
 						msg[2].addExtra("  ");
+					} else if (count > 6) {
+						msg[3].addExtra("  ");
 					}
 					Entry<Character, String> item = plugin.toolQuestItems.get(q.getKey());
 
@@ -439,7 +502,21 @@ public class NPCController {
 		}
 	}
 
+	public static void showBlankBefore(Player player) {
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+		player.sendMessage("");
+	}
+
 	public static void showBlacksmithMessage(Player player, TextComponent[] msg) {
+		player.sendMessage("");
 		player.sendMessage("");
 		player.sendMessage(SPACE + ChatColor.BLACK + ChatColor.BOLD + "대장장이");
 		for (int i = 0; i < msg.length; i++) {
@@ -451,6 +528,134 @@ public class NPCController {
 		}
 		player.sendMessage("   " + String.valueOf(LevelUpIcon.BLACKSMITH_DEFAULT.val()));
 		player.sendMessage(String.valueOf(MenuUnicode.TEXTBOX.val()));
+		player.sendMessage("");
+	}
+
+	public static void showShopInventory(LevelUp plugin, Player player, NPCMythic npcType) {
+		Inventory shopInv = Bukkit.createInventory((InventoryHolder) player, 36,
+				MenuController.getInventoryTitle(MenuUnicode.NPC_SHOP.val()));
+
+		ItemStack sellBtn = new ItemStack(Material.GREEN_TERRACOTTA);
+		ItemMeta sellIM = sellBtn.getItemMeta();
+		sellIM.setDisplayName(ChatColor.WHITE + "판매하기");
+		sellIM.getPersistentDataContainer().set(new NamespacedKey(plugin, "type"), PersistentDataType.STRING,
+				npcType.name());
+		sellBtn.setItemMeta(sellIM);
+		shopInv.setItem(MenuController.slot(3, 3), sellBtn);
+		shopInv.setItem(MenuController.slot(3, 4), sellBtn);
+		shopInv.setItem(MenuController.slot(3, 5), sellBtn);
+
+		player.openInventory(shopInv);
+	}
+
+	public static void sellItems(LevelUp plugin, Player player, NPCMythic type, Inventory inv) {
+		List<LevelUpItem> items = new ArrayList<LevelUpItem>();
+		for (int i = 0; i < 27; i++) {
+			if (inv.getItem(i) != null) {
+				LevelUpItem newItem = new LevelUpItem(inv.getItem(i));
+
+				if (items.contains(newItem)) {
+					LevelUpItem lv = items.get(items.indexOf(newItem));
+					lv.setAmount(lv.getAmount() + newItem.getAmount());
+				} else {
+					items.add(newItem);
+				}
+			}
+		}
+
+		if (!items.isEmpty()) {
+			Map<LevelUpItem, Integer> priceMap = plugin.npcShopItems.get(type);
+			Map<LevelUpItem, Integer> purchased = new HashMap<LevelUpItem, Integer>();
+			char space = '\u3000';
+
+			int totalPrice = 0;
+			for (Entry<LevelUpItem, Integer> entry : priceMap.entrySet()) {
+
+				if (items.contains(entry.getKey())) {
+					LevelUpItem item = items.get(items.indexOf(entry.getKey()));
+
+					if (item.getAmount() >= entry.getKey().getAmount()) {
+						int set = item.getAmount() / entry.getKey().getAmount();
+						int price = entry.getValue() * set;
+						int totalAmount = entry.getKey().getAmount() * set;
+						totalPrice += price;
+						purchased.put(entry.getKey(), totalAmount);
+
+						String name, spaces;
+						if (item.getNamespacedID() == null) {
+							name = item.getMaterial().toString().replace("_", " ");
+							if (name.length() % 3 == 0)
+								spaces = Character.toString(space).repeat(Math.max(0, 9 - (name.length() * 2 / 3)));
+							else if (name.length() % 3 == 1)
+								spaces = Character.toString(space).repeat(Math.max(0, 8 - (name.length() * 2 / 3)))
+										+ "  ";
+							else
+								spaces = Character.toString(space).repeat(Math.max(0, 8 - (name.length() * 2 / 3)))
+										+ " ";
+
+						} else {
+							name = ChatColor.stripColor(item.getItemStack().getItemMeta().getDisplayName());
+
+							if (item.getNamespacedID().contains("_star"))
+								spaces = Character.toString(space).repeat(Math.max(0, 10 - name.length())) + " ";
+							else
+								spaces = Character.toString(space).repeat(Math.max(0, 9 - name.length()));
+						}
+						player.sendMessage(
+								ChatColor.GOLD + name + spaces + String.format("%4s개: %3s코인", totalAmount, price));
+					}
+				}
+			}
+
+			if (!purchased.isEmpty()) {
+				player.sendMessage(ChatColor.GOLD + "------------------------");
+				String spaces = Character.toString(space).repeat(Math.max(0, 12));
+				player.sendMessage(ChatColor.GOLD + "총:" + spaces + totalPrice + "코인");
+
+				for (int i = 0; i < 27; i++) {
+					ItemStack item = inv.getItem(i);
+					if (item != null) {
+						LevelUpItem lvItem = new LevelUpItem(inv.getItem(i));
+
+						if (purchased.containsKey(lvItem)) {
+							int totalAmount = purchased.get(lvItem);
+							if (item.getAmount() >= totalAmount) {
+								item.setAmount(item.getAmount() - totalAmount);
+								purchased.remove(lvItem);
+							} else {
+								totalAmount -= item.getAmount();
+								item.setAmount(0);
+								purchased.put(lvItem, totalAmount);
+							}
+						}
+					}
+				}
+
+				if (totalPrice >= 100) {
+					int count = totalPrice / 100;
+					ItemStack gold = MoneyItem.GOLD.getItemStack();
+					gold.setAmount(count);
+					player.getInventory().addItem(gold);
+					totalPrice -= count * 100;
+				}
+
+				if (totalPrice >= 10) {
+					int count = totalPrice / 10;
+					ItemStack silver = MoneyItem.SILVER.getItemStack();
+					silver.setAmount(count);
+					player.getInventory().addItem(silver);
+					totalPrice -= count * 10;
+				}
+
+				if (totalPrice > 0) {
+					ItemStack copper = MoneyItem.COPPER.getItemStack();
+					copper.setAmount(totalPrice);
+					player.getInventory().addItem(copper);
+				}
+
+				player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+			}
+		}
 	}
 
 }

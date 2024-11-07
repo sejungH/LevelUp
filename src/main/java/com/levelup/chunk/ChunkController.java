@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -26,7 +29,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.levelup.LevelUp;
+import com.levelup.LevelUpIcon;
+import com.levelup.money.MoneyController;
 import com.levelup.player.PlayerData;
+import com.levelup.village.VillageController;
 import com.levelup.village.VillageData;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MVWorldManager;
@@ -36,7 +42,7 @@ import dev.lone.itemsadder.api.CustomStack;
 import net.md_5.bungee.api.ChatColor;
 
 public class ChunkController {
-	
+
 	public static final List<String> BANNED_BLOCKS = new ArrayList<String>(
 			Arrays.asList("CHEST", "BOX", "FURNACE", "SMOKER", "HOPPER", "BARREL", "SIGN", "BREWING_STAND", "ANVIL"));
 
@@ -185,6 +191,209 @@ public class ChunkController {
 		pstmt.close();
 
 		plugin.villageChunks.remove(villageId);
+	}
+
+	public static void purchaseChunkByPlayer(LevelUp plugin, Player player) throws SQLException {
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		Chunk chunk = player.getLocation().getChunk();
+
+		if (ChunkController.checkPlayerChunkByPlayer(plugin, player, chunk)
+				&& ChunkController.checkVillageChunkByPlayer(plugin, player, chunk)) {
+
+			if (!plugin.playerChunks.containsKey(player.getUniqueId()))
+				plugin.playerChunks.put(player.getUniqueId(), new ArrayList<Chunk>());
+
+			int price = (int) Math.round(
+					ChunkController.calculatePlayerChunkPrice(plugin.playerChunks.get(player.getUniqueId()).size()));
+
+			if (pd.getBalance() >= price) {
+				MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
+				ChunkController.addPlayerChunk(plugin, player, chunk);
+				ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.GREEN, 5);
+				player.sendMessage(ChatColor.GREEN + "청크를 성공적으로 구매했습니다  " + ChatColor.RESET + LevelUpIcon.COIN.val()
+						+ ChatColor.GOLD + " " + price);
+				player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+			} else {
+				player.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET + LevelUpIcon.COIN.val()
+						+ ChatColor.GOLD + " " + price);
+			}
+		}
+	}
+
+	public static void purchaseChunkByVillage(LevelUp plugin, Player player) throws SQLException {
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		Chunk chunk = player.getLocation().getChunk();
+		int villageId = pd.getVillage();
+
+		if (ChunkController.checkPlayerChunkByVillage(plugin, player, chunk)
+				&& ChunkController.checkVillageChunkByVillage(plugin, player, chunk)) {
+
+			if (!plugin.villageChunks.containsKey(villageId))
+				plugin.villageChunks.put(villageId, new ArrayList<Chunk>());
+
+			int price = (int) Math
+					.round(ChunkController.calculateVillageChunkPrice(plugin.villageChunks.get(villageId).size()));
+
+			List<Chunk> chunks = plugin.villageChunks.get(villageId);
+
+			if (chunks.isEmpty()) {
+
+				if (pd.getBalance() >= price) {
+					MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
+					ChunkController.addVillageChunk(plugin, villageId, chunk);
+					ChunkController.displayVillageChunkBorder(plugin, player, chunk, Color.GREEN, 5);
+
+					int[] coordinate = new int[3];
+					coordinate[0] = (int) player.getLocation().getX();
+					coordinate[1] = (int) player.getLocation().getY();
+					coordinate[2] = (int) player.getLocation().getZ();
+					VillageController.setVillageSpawn(plugin, villageId, coordinate);
+
+					LocalDate today = LocalDate.now();
+					LocalDate lastTaxPaid;
+					if (today.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+						lastTaxPaid = LocalDate.now();
+					} else {
+						lastTaxPaid = today.minusDays(today.getDayOfWeek().getValue() + 1);
+					}
+					int newTax = VillageController.countVillageMembers(plugin, villageId) + VillageController.TAX_RATE;
+					VillageController.setLastTax(plugin, villageId, newTax);
+					VillageController.updateLastTaxPaid(plugin, villageId, lastTaxPaid);
+
+					player.sendMessage(ChatColor.GREEN + "마을 청크를 성공적으로 구매했습니다  " + ChatColor.RESET
+							+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+					player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+				} else {
+					player.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET + LevelUpIcon.COIN.val()
+							+ ChatColor.GOLD + " " + price);
+				}
+
+			} else {
+				for (Chunk c : chunks) {
+					int distX = chunk.getX() - c.getX();
+					int distZ = chunk.getZ() - c.getZ();
+					int newX = 0;
+					int newZ = 0;
+
+					if (distX < -1 && distX > -5)
+						newX = -3;
+					else if (distX > 1 && distX < 5)
+						newX = 3;
+
+					if (distZ < -1 && distZ > -5)
+						newZ = -3;
+					else if (distZ > 1 && distX < 5)
+						newZ = 3;
+
+					if (newX != 0 || newZ != 0) {
+						if (pd.getBalance() >= price) {
+							MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
+							Chunk newChunk = player.getWorld().getChunkAt(c.getX() + newX, c.getZ() + newZ);
+							ChunkController.addVillageChunk(plugin, villageId, newChunk);
+							ChunkController.displayVillageChunkBorder(plugin, player, newChunk, Color.GREEN, 5);
+
+							player.sendMessage(ChatColor.GREEN + "마을 청크를 성공적으로 구매했습니다  " + ChatColor.RESET
+									+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+							player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+						} else {
+							player.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET
+									+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+						}
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+	public static void saleChunkByPlayer(LevelUp plugin, Player player) throws SQLException {
+		if (plugin.playerChunks.containsKey(player.getUniqueId())) {
+			List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
+			Chunk chunk = player.getLocation().getChunk();
+
+			if (chunks.contains(chunk)) {
+				int price = (int) Math.round(ChunkController.calculatePlayerChunkPrice(chunks.size() - 1));
+				MoneyController.depoistMoeny(plugin, price, player.getUniqueId());
+				ChunkController.deletePlayerChunk(plugin, player.getUniqueId(), chunk);
+				ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.RED, 2);
+				player.sendMessage(ChatColor.GREEN + "청크를 성공적으로 판매했습니다  " + ChatColor.RESET + LevelUpIcon.COIN.val()
+						+ ChatColor.GOLD + " " + price);
+				player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+			} else {
+				player.sendMessage(ChatColor.RED + "소유 중인 청크가 아닙니다");
+			}
+
+		} else {
+			player.sendMessage(ChatColor.RED + "소유 중인 청크가 아닙니다");
+		}
+	}
+
+	public static void saleChunkByVillage(LevelUp plugin, Player player) throws SQLException {
+		Chunk chunk = player.getLocation().getChunk();
+		PlayerData pd = plugin.players.get(player.getUniqueId());
+		VillageData vd = plugin.villages.get(pd.getVillage());
+		int villageId = vd.getId();
+
+		if (vd.getSpawn() != null) {
+			if (isSpawnChunk(plugin, villageId, chunk)) {
+				player.sendMessage(ChatColor.RED + "이 청크는 마을 스폰 지점을 포함하고 있어서 판매할 수 없습니다");
+				return;
+			}
+		}
+
+		List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
+		List<Chunk> adjoints = ChunkController.getAdjointChunks(chunk);
+		List<Chunk> villageChunks = new ArrayList<Chunk>(chunks);
+		villageChunks.retainAll(adjoints);
+
+		if (!villageChunks.isEmpty()) {
+			Chunk vc = villageChunks.get(0);
+			List<Chunk> near = getNearVillageChunk(plugin, villageId, vc);
+			int price = (int) Math.round(calculateVillageChunkPrice(chunks.size() - 1));
+
+			if (near.size() == 1) {
+				MoneyController.depoistMoeny(plugin, price, player.getUniqueId());
+				deleteVillageChunk(plugin, villageId, vc);
+				displayVillageChunkBorder(plugin, player, vc, Color.RED, 5);
+				player.sendMessage(ChatColor.GREEN + "마을 청크를 성공적으로 판매했습니다  " + ChatColor.RESET + LevelUpIcon.COIN.val()
+						+ ChatColor.GOLD + " " + price);
+				player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+			} else if (near.size() > 1) {
+				boolean canSell = true;
+				for (Chunk n : near) {
+					List<Chunk> nn = getNearVillageChunk(plugin, villageId, n);
+					if (nn.size() == 1) {
+						canSell = false;
+						break;
+					}
+				}
+
+				if (canSell) {
+					MoneyController.depoistMoeny(plugin, price, player.getUniqueId());
+					deleteVillageChunk(plugin, villageId, vc);
+					displayVillageChunkBorder(plugin, player, vc, Color.RED, 2);
+					player.sendMessage(ChatColor.GREEN + "마을 청크를 성공적으로 판매했습니다  " + ChatColor.RESET
+							+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+					player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+
+				} else {
+					player.sendMessage(ChatColor.RED + "이 청크를 판매할 수 없습니다 (모든 마을청크는 인접하여야 합니다)");
+				}
+
+			} else {
+				player.sendMessage(ChatColor.RED + "마을에 적어도 하나의 청크를 유지해야합니다");
+			}
+
+		} else {
+			player.sendMessage(ChatColor.RED + "마을에서 소유 중인 청크가 아닙니다");
+		}
+
 	}
 
 	public static boolean checkPlayerChunkByPlayer(LevelUp plugin, Player player, Chunk chunk) {
@@ -387,7 +596,7 @@ public class ChunkController {
 				double z = chunk.getZ() * 16 + (double) j;
 
 				Location loc = new Location(world, x, y, z);
-				
+
 				CustomStack bar;
 				if (color.equals(Color.RED)) {
 					bar = CustomStack.getInstance("customitems:red_bar");
@@ -639,38 +848,63 @@ public class ChunkController {
 
 		return -1;
 	}
-	
+
+	public static boolean isSpawnChunk(LevelUp plugin, int villageId, Chunk chunk) {
+		MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+		MVWorldManager worldManager = core.getMVWorldManager();
+		MultiverseWorld world = worldManager.getMVWorld("world");
+
+		VillageData vd = plugin.villages.get(villageId);
+
+		Chunk spawnChunk = world.getCBWorld().getBlockAt(vd.getSpawn()[0], vd.getSpawn()[1], vd.getSpawn()[2])
+				.getChunk();
+		
+		for (Chunk c : plugin.villageChunks.get(villageId)) {
+			int spawnToCenterX = Math.abs(spawnChunk.getX() - c.getX());
+			int spawnToCenterZ = Math.abs(spawnChunk.getZ() - c.getZ());
+
+			int chunkToCenterX = Math.abs(chunk.getX() - c.getX());
+			int chunkToCenterZ = Math.abs(chunk.getZ() - c.getZ());
+
+			if (spawnToCenterX < 2 && spawnToCenterZ < 2 && chunkToCenterX < 2 && chunkToCenterZ < 2) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static boolean canInteract(LevelUp plugin, Player player, Chunk chunk) {
 		PlayerData pd = plugin.players.get(player.getUniqueId());
-		
+
 		UUID owner = getChunkOwnerPlayer(plugin, chunk);
 		if (owner != null) {
-			
+
 			if (owner.equals(player.getUniqueId())) {
 				return true;
-				
+
 			} else {
 				PlayerData ownerPD = plugin.players.get(owner);
 				player.sendMessage(ChatColor.RED + ownerPD.getUsername() + " 님이 소유 중인 청크입니다");
 				return false;
 			}
-			
+
 		}
-			
+
 		int ownerVillage = getChunkOwnerVillage(plugin, chunk);
 		if (ownerVillage > 0) {
-			
+
 			if (ownerVillage == pd.getVillage()) {
 				return true;
-				
+
 			} else {
 				VillageData ownerVD = plugin.villages.get(ownerVillage);
 				player.sendMessage(ChatColor.RED + "마을 [" + ownerVD.getName() + "] 에서 소유 중인 청크입니다");
 				return false;
 			}
-			
+
 		}
-			
+
 		player.sendMessage(ChatColor.RED + "본인이 소유 중인 청크가 아닙니다");
 		return false;
 	}

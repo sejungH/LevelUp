@@ -1,6 +1,8 @@
 package com.levelup.ride;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.NamespacedKey;
@@ -48,6 +50,7 @@ public class RideEvent implements Listener {
 			CustomStack key = CustomStack.byItemStack(event.getItem());
 			NamespacedKey ownerKey = new NamespacedKey(plugin, "owner");
 			NamespacedKey uuidKey = new NamespacedKey(plugin, "uuid");
+			NamespacedKey rideKey = new NamespacedKey(plugin, "ride");
 
 			if (key != null && key.getNamespacedID().contains("_key")) {
 
@@ -67,6 +70,7 @@ public class RideEvent implements Listener {
 							UUID entityUUID = UUID.fromString(key.getItemStack().getItemMeta()
 									.getPersistentDataContainer().get(uuidKey, PersistentDataType.STRING));
 							LivingEntity entity = (LivingEntity) plugin.getServer().getEntity(entityUUID);
+
 							if (entity != null) {
 								entity.remove();
 								player.sendMessage(ChatColor.GREEN + "[" + ChatColor.GOLD
@@ -77,8 +81,8 @@ public class RideEvent implements Listener {
 								player.getInventory().setItemInMainHand(key.getItemStack());
 
 							} else {
-								String id = "ride_" + key.getNamespacedID().substring(key.getNamespacedID().indexOf(":") + 1,
-										key.getNamespacedID().indexOf("_key"));
+								String id = "ride_" + key.getNamespacedID().substring(
+										key.getNamespacedID().indexOf(":") + 1, key.getNamespacedID().indexOf("_key"));
 								MythicMob mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(id).orElse(null);
 
 								if (mythicMob != null) {
@@ -87,6 +91,8 @@ public class RideEvent implements Listener {
 											+ ChatColor.GREEN + "] 을 소환했습니다");
 									meta.getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING,
 											mob.getUniqueId().toString());
+									mob.getEntity().getBukkitEntity().getPersistentDataContainer().set(rideKey,
+											PersistentDataType.BOOLEAN, true);
 									key.getItemStack().setItemMeta(meta);
 									player.getInventory().setItemInMainHand(key.getItemStack());
 								}
@@ -95,8 +101,8 @@ public class RideEvent implements Listener {
 							activateCooldown(player);
 
 						} else {
-							String id = "ride_" + key.getNamespacedID().substring(key.getNamespacedID().indexOf(":") + 1,
-									key.getNamespacedID().indexOf("_key"));
+							String id = "ride_" + key.getNamespacedID().substring(
+									key.getNamespacedID().indexOf(":") + 1, key.getNamespacedID().indexOf("_key"));
 							MythicMob mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(id).orElse(null);
 
 							if (mythicMob != null) {
@@ -105,14 +111,26 @@ public class RideEvent implements Listener {
 										+ ChatColor.GREEN + "] 을 소환했습니다");
 								meta.getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING,
 										mob.getUniqueId().toString());
+								mob.getEntity().getBukkitEntity().getPersistentDataContainer().set(rideKey,
+										PersistentDataType.BOOLEAN, true);
 								key.getItemStack().setItemMeta(meta);
 								player.getInventory().setItemInMainHand(key.getItemStack());
 								activateCooldown(player);
 							}
 						}
 					} else {
-						player.sendMessage(ChatColor.RED + "본인 소유의 탈것만 소환할 수 있습니다.");
+						player.sendMessage(ChatColor.RED + "본인 소유의 탈것만 소환할 수 있습니다");
 					}
+
+				} else {
+					List<String> lore = new ArrayList<String>();
+					lore.add(ChatColor.GRAY + "소유자: " + player.getName());
+					meta.setLore(lore);
+					meta.getPersistentDataContainer().set(ownerKey, PersistentDataType.STRING,
+							player.getUniqueId().toString());
+
+					event.getItem().setItemMeta(meta);
+					player.sendMessage(ChatColor.GREEN + "이 탈것의 소유자로 등록되었습니다");
 				}
 			}
 
@@ -125,27 +143,26 @@ public class RideEvent implements Listener {
 		Entity vehicle = event.getRightClicked();
 
 		if (!player.isInsideVehicle()) {
-			if (MythicBukkit.inst().getMobManager().isMythicMob(vehicle)) {
+			NamespacedKey rideKey = new NamespacedKey(plugin, "ride");
+			if (vehicle.getPersistentDataContainer().has(rideKey)) {
 				ActiveMob vehicleMob = MythicBukkit.inst().getMobManager().getMythicMobInstance(vehicle);
-				if (vehicleMob.getType().getInternalName().toUpperCase().startsWith("RIDE")) {
-					vehicle.addPassenger(player);
-					vehicleMob.setStance("mount");
-				}
+				vehicle.addPassenger(player);
+				vehicleMob.setStance("mount");
+				System.out.println(vehicleMob.getStance());
 			}
 		}
 	}
-
+	
 	@EventHandler
 	public void onEntityDismount(EntityDismountEvent event) {
-		if (event.getDismounted() instanceof Player) {
-			Player player = (Player) event.getDismounted();
-			Entity vehicle = event.getEntity();
-			if (player.isInsideVehicle()) {
-				if (MythicBukkit.inst().getMobManager().isMythicMob(vehicle)) {
-					ActiveMob vehicleMob = MythicBukkit.inst().getMobManager().getMythicMobInstance(vehicle);
-					vehicle.removePassenger(player);
-					vehicleMob.setStance("dismount");
-				}
+		if (event.getEntity() instanceof Player player) {
+			Entity vehicle = event.getDismounted();
+			NamespacedKey rideKey = new NamespacedKey(plugin, "ride");
+			if (vehicle.getPersistentDataContainer().has(rideKey)) {
+				ActiveMob vehicleMob = MythicBukkit.inst().getMobManager().getMythicMobInstance(vehicle);
+				vehicle.removePassenger(player);
+				vehicleMob.setStance("dismount");
+				System.out.println(vehicleMob.getStance());
 			}
 		}
 	}
@@ -154,8 +171,12 @@ public class RideEvent implements Listener {
 	public void onPlayerAttck(PlayerInteractEvent event) {
 		if (event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
 			Player player = event.getPlayer();
-			if (player.isInsideVehicle() && player.getVehicle() != null) {
-				RideController.playAttackAnimation(player, player.getVehicle());
+			Entity vehicle = player.getVehicle();
+			if (player.isInsideVehicle() && vehicle != null) {
+				NamespacedKey rideKey = new NamespacedKey(plugin, "ride");
+				if (vehicle.getPersistentDataContainer().has(rideKey)) {
+					RideController.playAttackAnimation(player, vehicle);
+				}
 			}
 		}
 	}
@@ -164,8 +185,12 @@ public class RideEvent implements Listener {
 	public void onPlayerAttack(EntityDamageByEntityEvent event) {
 		if (event.getDamager() instanceof Player) {
 			Player player = (Player) event.getDamager();
-			if (player.isInsideVehicle() && player.getVehicle() != null) {
-				RideController.playAttackAnimation(player, player.getVehicle());
+			Entity vehicle = player.getVehicle();
+			if (player.isInsideVehicle() && vehicle != null) {
+				NamespacedKey rideKey = new NamespacedKey(plugin, "ride");
+				if (vehicle.getPersistentDataContainer().has(rideKey)) {
+					RideController.playAttackAnimation(player, vehicle);
+				}
 			}
 		}
 	}

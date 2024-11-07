@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -109,6 +110,18 @@ public abstract class ToolAbstract {
 		this.exp += exp;
 	}
 
+	public int getMaxExp() {
+		int maxExp = 0;
+		for (ToolQuest q : plugin.toolQuest.get(getType()).get(getMaterial())) {
+			if (q.getLevel() == getLevel()) {
+				maxExp = q.getExp();
+				break;
+			}
+		}
+
+		return maxExp;
+	}
+
 	public Map<Enchantment, Integer> getEnchantment() {
 		return enchantment;
 	}
@@ -123,7 +136,7 @@ public abstract class ToolAbstract {
 
 		return 0;
 	}
-	
+
 	public abstract int getEnchantLimit(Enchantment enchant);
 
 	public String getEnchantmentJSON() {
@@ -251,7 +264,11 @@ public abstract class ToolAbstract {
 
 		String prefix = matcher.group(2);
 
-		return LevelUpIcon.valueOf(prefix.toUpperCase());
+		if (EnumUtils.isValidEnum(LevelUpIcon.class, prefix.toUpperCase()))
+			return LevelUpIcon.valueOf(prefix.toUpperCase());
+		
+		else
+			return null;
 	}
 
 	public abstract int getMainStat();
@@ -260,13 +277,15 @@ public abstract class ToolAbstract {
 
 	public int getTotalStat() {
 		int total = getMainStat() + getSubStat();
-		
+
 		for (Entry<Enchantment, Integer> enchant : this.enchantment.entrySet()) {
 			total -= enchant.getValue();
 		}
-		
+
 		return total;
 	}
+
+	public abstract ToolType getType();
 
 	@Override
 	public String toString() {

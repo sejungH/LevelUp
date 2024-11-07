@@ -35,6 +35,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.EquipmentSlot;
@@ -47,6 +48,7 @@ import com.levelup.LevelUpIcon;
 import com.levelup.chat.ChatController;
 import com.levelup.menu.MenuController;
 import com.levelup.menu.MenuUnicode;
+import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerEvent;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MVWorldManager;
@@ -60,14 +62,43 @@ import net.md_5.bungee.api.ChatColor;
 public class ToolEvent implements Listener {
 
 	private LevelUp plugin;
-	private Map<BossBar, Long> cooldowns;
-	private final int cool = 10;
 
 	public ToolEvent(LevelUp plugin) {
 		this.plugin = plugin;
-		this.cooldowns = new HashMap<BossBar, Long>();
+		ToolController.cooldowns = new HashMap<BossBar, Long>();
 		ToolController.bossBars = new HashMap<UUID, Map<ToolType, BossBar>>();
 		ToolController.MsgShown = new HashMap<UUID, List<ToolType>>();
+		ToolController.boostBars = new HashMap<UUID, BossBar>();
+		ToolController.boostMults = new HashMap<UUID, Integer>();
+	}
+	
+	@EventHandler
+	public void onPlayerHeldTool(PlayerItemHeldEvent event) {
+		Player player = event.getPlayer();
+		ItemStack prev = player.getInventory().getItem(event.getPreviousSlot());
+		ItemStack curr = player.getInventory().getItem(event.getNewSlot());
+		ToolType prevType = prev == null ? null : ToolType.get(prev.getType());
+		ToolType currType = curr == null ? null : ToolType.get(curr.getType());
+		
+		if (prevType != null) {
+			BossBar bossBar = ToolController.updateBossBar(plugin, player, prevType);
+			if (bossBar.isVisible())
+				bossBar.setVisible(false);
+		}
+		
+		if (currType != null) {
+			BossBar bossBar = ToolController.updateBossBar(plugin, player, currType);
+			if (!bossBar.isVisible())
+				bossBar.setVisible(true);
+		}
+		
+		if (prevType == null && currType == null) {
+			for (BossBar bossBar : ToolController.bossBars.get(player.getUniqueId()).values()) {
+				if (bossBar.isVisible()) {
+					bossBar.setVisible(false);
+				}
+			}
+		}
 	}
 
 	@EventHandler
@@ -106,47 +137,9 @@ public class ToolEvent implements Listener {
 					chunk.getPersistentDataContainer().remove(blockData);
 					
 				} else {
-					tool.addExp(exp.get(block.getType()));
-
-					int maxExp = 0;
-					for (ToolQuest q : plugin.toolQuest.get(type).get(item.getType())) {
-						if (q.getLevel() == tool.getLevel()) {
-							maxExp = q.getExp();
-							break;
-						}
-					}
-
-					double percent = (double) tool.getExp() / (double) maxExp;
-					if (percent >= 1.0) {
-						if (!ToolController.MsgShown.containsKey(player.getUniqueId())) {
-							ToolController.MsgShown.put(player.getUniqueId(), new ArrayList<ToolType>());
-						}
-
-						if (!ToolController.MsgShown.get(player.getUniqueId()).contains(type)) {
-							player.sendMessage("(경험치 100% 메세지)");
-							player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
-							ToolController.MsgShown.get(player.getUniqueId()).add(type);
-						}
-
-						percent = 1.0;
-					}
-
-					BossBar bossBar = ToolController.bossBars.get(player.getUniqueId()).get(type);
-					bossBar.setProgress(percent);
-					if (!bossBar.isVisible())
-						bossBar.setVisible(true);
-					activateCooldown(bossBar);
-
-					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-
-						@Override
-						public void run() {
-							if (hasCooldown(bossBar)) {
-								bossBar.setVisible(false);
-							}
-						}
-
-					}, 20 * cool);
+					int mult = ToolController.boostMults.get(player.getUniqueId());
+					tool.addExp(exp.get(block.getType()) * mult);
+					ToolController.updateBossBar(plugin, player, type);
 				}
 			}
 		}
@@ -201,55 +194,16 @@ public class ToolEvent implements Listener {
 				if (!tool.equals(item))
 					return;
 
+				int mult = ToolController.boostMults.get(player.getUniqueId());
 				int exp = (int) livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 				if (type == ToolType.AXE) {
-					tool.addExp(exp);
-					System.out.println(exp);
+					tool.addExp(exp * mult);
 
 				} else if (type == ToolType.SWORD) {
-					tool.addExp(exp * 2);
-					System.out.println(exp * 2);
+					tool.addExp(exp * 2 * mult);
 				}
 
-				int maxExp = 0;
-				for (ToolQuest q : plugin.toolQuest.get(type).get(item.getType())) {
-					if (q.getLevel() == tool.getLevel()) {
-						maxExp = q.getExp();
-						break;
-					}
-				}
-
-				double percent = (double) tool.getExp() / (double) maxExp;
-				if (percent >= 1.0) {
-					if (!ToolController.MsgShown.containsKey(player.getUniqueId())) {
-						ToolController.MsgShown.put(player.getUniqueId(), new ArrayList<ToolType>());
-					}
-
-					if (!ToolController.MsgShown.get(player.getUniqueId()).contains(type)) {
-						player.sendMessage("(경험치 100% 메세지)");
-						player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
-						ToolController.MsgShown.get(player.getUniqueId()).add(type);
-					}
-
-					percent = 1.0;
-				}
-
-				BossBar bossBar = ToolController.bossBars.get(player.getUniqueId()).get(type);
-				bossBar.setProgress(percent);
-				if (!bossBar.isVisible())
-					bossBar.setVisible(true);
-				activateCooldown(bossBar);
-
-				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-
-					@Override
-					public void run() {
-						if (hasCooldown(bossBar)) {
-							bossBar.setVisible(false);
-						}
-					}
-
-				}, 20 * cool);
+				ToolController.updateBossBar(plugin, player, type);
 			}
 		}
 
@@ -274,16 +228,16 @@ public class ToolEvent implements Listener {
 				ItemStack sword = tool.getSword().getAsItemStack();
 				ItemStack shovel = tool.getShovel().getAsItemStack();
 
-				if (!player.getInventory().contains(pickaxe))
+				if (!PlayerController.hasItem(player, pickaxe))
 					toolInv.setItem(1, pickaxe);
 
-				if (!player.getInventory().contains(axe))
+				if (!PlayerController.hasItem(player, axe))
 					toolInv.setItem(3, axe);
 
-				if (!player.getInventory().contains(sword))
+				if (!PlayerController.hasItem(player, sword))
 					toolInv.setItem(5, sword);
 
-				if (!player.getInventory().contains(shovel))
+				if (!PlayerController.hasItem(player, shovel))
 					toolInv.setItem(7, shovel);
 
 				player.openInventory(toolInv);
@@ -417,7 +371,8 @@ public class ToolEvent implements Listener {
 								try {
 									String newName = anvilInv.getRenameText();
 									LevelUpIcon icon = tool.getIcon();
-									newName = newName.replace(String.valueOf(icon.val()), "").strip();
+									if (icon != null)
+										newName = newName.replace(String.valueOf(icon.val()), "").strip();
 
 									if (nbt.hasTag("ToolColor")) {
 										ReadableNBTList<String> toolColor = (ReadableNBTList<String>) nbt
@@ -429,11 +384,13 @@ public class ToolEvent implements Listener {
 										}
 
 										newName = ChatController.gradient(newName, gradient);
+										
+									} else {
+										newName = ChatColor.stripColor(newName);
 									}
 
-									if (icon != null) {
+									if (icon != null) 
 										newName = ChatColor.WHITE + Character.toString(icon.val()) + " " + newName;
-									}
 
 									ToolController.updateToolName(plugin, player.getUniqueId(), newName, type);
 
@@ -528,16 +485,5 @@ public class ToolEvent implements Listener {
 		}
 	}
 
-	public boolean hasCooldown(BossBar bossBar) {
-		if (cooldowns.get(bossBar) < (System.currentTimeMillis() - (cool - 1) * 1000)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public void activateCooldown(BossBar bossBar) {
-		cooldowns.put(bossBar, System.currentTimeMillis());
-	}
 
 }

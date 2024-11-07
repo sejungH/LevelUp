@@ -27,13 +27,13 @@ public class ChatCommand implements CommandExecutor {
 				
 				if (label.equalsIgnoreCase("전체채팅")) {
 					pd.setChatType(ChatType.DEFAULT);
-					sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다.");
+					sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다");
 					
 				} else if (label.equalsIgnoreCase("마을채팅")) {
 					
 					if (pd.getVillage() > 0) {
 						pd.setChatType(ChatType.VILLAGE);
-						sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다.");
+						sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다");
 					}
 					
 				} else if (label.equalsIgnoreCase("c") || label.equalsIgnoreCase("ㅊ")) {
@@ -42,15 +42,15 @@ public class ChatCommand implements CommandExecutor {
 						
 						if (pd.getChatType() == ChatType.DEFAULT) {
 							pd.setChatType(ChatType.VILLAGE);
-							sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다.");
+							sender.sendMessage(ChatColor.GREEN + "마을채팅 모드로 전환되었습니다");
 							
 						} else {
 							pd.setChatType(ChatType.DEFAULT);
-							sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다.");
+							sender.sendMessage(ChatColor.GREEN + "전체채팅 모드로 전환되었습니다");
 						}
 						
 					} else {
-						sender.sendMessage(ChatColor.RED + "현재 가입되어있는 마을이 없습니다.");
+						sender.sendMessage(ChatColor.RED + "현재 가입되어있는 마을이 없습니다");
 					}
 					
 				} else if (label.equalsIgnoreCase("귓")) {

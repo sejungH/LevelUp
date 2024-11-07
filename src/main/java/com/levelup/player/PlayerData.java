@@ -1,6 +1,7 @@
 package com.levelup.player;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,6 +71,39 @@ public class PlayerData {
 	}
 
 	public LocalDateTime getLastOnline() {
+		return lastOnline;
+	}
+	
+	public String getLastOnlineAsString() {
+		LocalDateTime now = LocalDateTime.now();
+		
+		long years = ChronoUnit.YEARS.between(lastOnline, now);
+		long months = ChronoUnit.MONTHS.between(lastOnline, now);
+		long days = ChronoUnit.DAYS.between(lastOnline, now);
+		long hours = ChronoUnit.HOURS.between(lastOnline, now);
+		long minutes = ChronoUnit.MINUTES.between(lastOnline, now);
+		long seconds = ChronoUnit.SECONDS.between(lastOnline, now);
+		
+		String lastOnline = "";
+		if (years > 0) {
+			lastOnline = years + "년 전";
+
+		} else if (months > 0) {
+			lastOnline = months + "달 전";
+
+		} else if (days > 0) {
+			lastOnline = days + "일 전";
+
+		} else if (hours > 0) {
+			lastOnline = hours + "시간 전";
+
+		} else if (minutes > 0) {
+			lastOnline = minutes + "분 전";
+
+		} else if (seconds > 0) {
+			lastOnline = seconds + "초 전";
+		}
+		
 		return lastOnline;
 	}
 

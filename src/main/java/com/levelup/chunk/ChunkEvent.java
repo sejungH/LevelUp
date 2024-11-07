@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
@@ -26,7 +27,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
@@ -77,6 +78,30 @@ public class ChunkEvent implements Listener {
 				player.sendMessage(ChatColor.RED + "마을 [" + vd.getName() + "] 에서 소유 중인 청크입니다");
 				return;
 			}
+
+			if (owner == null && villageOwner <= 0) {
+
+				if (block.getState() instanceof Chest chest) {
+					NamespacedKey ownerPlayerKey = new NamespacedKey(plugin, "ownerPlayer");
+					NamespacedKey ownerVillageKey = new NamespacedKey(plugin, "ownerVillage");
+
+					if (chest.getPersistentDataContainer().has(ownerPlayerKey)) {
+						UUID ownerPlayer = UUID.fromString(
+								chest.getPersistentDataContainer().get(ownerPlayerKey, PersistentDataType.STRING));
+						if (!ownerPlayer.equals(player.getUniqueId())) {
+							chest.getInventory().clear();
+						}
+
+					} else if (chest.getPersistentDataContainer().has(ownerVillageKey)) {
+						int ownerVillage = chest.getPersistentDataContainer().get(ownerVillageKey,
+								PersistentDataType.INTEGER);
+						if (ownerVillage != pd.getVillage()) {
+							chest.getInventory().clear();
+						}
+					}
+				}
+			}
+
 		}
 	}
 
@@ -94,8 +119,10 @@ public class ChunkEvent implements Listener {
 			UUID owner = ChunkController.getChunkOwnerPlayer(plugin, block.getChunk());
 			if (owner != null) {
 				if (owner.equals(player.getUniqueId())) {
-					if (block.getType().equals(Material.CHEST)) {
-						block.setMetadata("ownerPlayer", new FixedMetadataValue(plugin, owner.toString()));
+					if (block.getState() instanceof Chest chest) {
+						NamespacedKey key = new NamespacedKey(plugin, "ownerPlayer");
+						chest.getPersistentDataContainer().set(key, PersistentDataType.STRING, owner.toString());
+						chest.update();
 					}
 
 				} else {
@@ -110,8 +137,10 @@ public class ChunkEvent implements Listener {
 			int villageOwner = ChunkController.getChunkOwnerVillage(plugin, block.getChunk());
 			if (villageOwner > 0) {
 				if (villageOwner == pd.getVillage()) {
-					if (block.getType().equals(Material.CHEST)) {
-						block.setMetadata("ownerVillage", new FixedMetadataValue(plugin, villageOwner));
+					if (block.getState() instanceof Chest chest) {
+						NamespacedKey key = new NamespacedKey(plugin, "ownerVillage");
+						chest.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, villageOwner);
+						chest.update();
 					}
 
 				} else {
@@ -149,99 +178,108 @@ public class ChunkEvent implements Listener {
 				for (String material : ChunkController.BANNED_BLOCKS) {
 					if (block.getType().toString().toUpperCase().contains(material)) {
 						PlayerData pd = plugin.players.get(player.getUniqueId());
+						UUID chunkOwnerPlayer = ChunkController.getChunkOwnerPlayer(plugin, block.getChunk());
 						
-						UUID chunkOwnerPlayer = ChunkController.getChunkOwnerPlayer(plugin, block.getChunk());						
 						if (chunkOwnerPlayer != null && chunkOwnerPlayer.equals(player.getUniqueId())) {
-							if (block.getType().equals(Material.CHEST)) {
-								if (block.hasMetadata("ownerPlayer")) {
-									String ownerPlayer = block.getMetadata("ownerPlayer").get(0).asString();
-									System.out.println(block.getMetadata("ownerPlayer"));
-									if (!ownerPlayer.equals(player.getUniqueId().toString())) {
-										Chest chest = (Chest) block.getState();
+							
+							if (block.getState() instanceof Chest chest) {
+								NamespacedKey ownerPlayerKey = new NamespacedKey(plugin, "ownerPlayer");
+								NamespacedKey ownerVillageKey = new NamespacedKey(plugin, "ownerVillage");
+								
+								if (chest.getPersistentDataContainer().has(ownerPlayerKey)) {
+									UUID ownerPlayer = UUID.fromString(chest.getPersistentDataContainer()
+											.get(ownerPlayerKey, PersistentDataType.STRING));
+									if (!ownerPlayer.equals(player.getUniqueId())) {
 										chest.getInventory().clear();
-										block.setMetadata("ownerPlayer",
-												new FixedMetadataValue(plugin, player.getUniqueId().toString()));
+										chest.getPersistentDataContainer().set(ownerPlayerKey,
+												PersistentDataType.STRING, player.getUniqueId().toString());
+										chest.update();
 										return;
 									}
 
-								} else if (block.hasMetadata("ownerVillage")) {
-									System.out.println(block.getMetadata("ownerVillage"));
-									Chest chest = (Chest) block.getState();
+								} else if (chest.getPersistentDataContainer().has(ownerVillageKey)) {
 									chest.getInventory().clear();
-									block.removeMetadata("ownerVillage", plugin);
-									block.setMetadata("ownerPlayer",
-											new FixedMetadataValue(plugin, player.getUniqueId().toString()));
+									chest.getPersistentDataContainer().remove(ownerVillageKey);
+									chest.getPersistentDataContainer().set(ownerPlayerKey, PersistentDataType.STRING,
+											player.getUniqueId().toString());
+									chest.update();
 									return;
 								}
 							}
-							
+
 						} else if (chunkOwnerPlayer != null && !chunkOwnerPlayer.equals(player.getUniqueId())) {
 							event.setCancelled(true);
 							PlayerData ownerPlayerData = plugin.players.get(chunkOwnerPlayer);
 							player.sendMessage(ChatColor.RED + ownerPlayerData.getUsername() + " 님이 소유 중인 청크입니다");
 							return;
 						}
-						
+
 						int chunkOwnerVillage = ChunkController.getChunkOwnerVillage(plugin, block.getChunk());
 						if (chunkOwnerVillage > 0 && chunkOwnerVillage == pd.getVillage()) {
-							if (block.getType().equals(Material.CHEST)) {
-								if (block.hasMetadata("ownerPlayer")) {
-									System.out.println(block.getMetadata("ownerPlayer"));
-									Chest chest = (Chest) block.getState();
+							if (block.getState() instanceof Chest chest) {
+								NamespacedKey ownerPlayerKey = new NamespacedKey(plugin, "ownerPlayer");
+								NamespacedKey ownerVillageKey = new NamespacedKey(plugin, "ownerVillage");
+								if (chest.getPersistentDataContainer().has(ownerPlayerKey)) {
 									chest.getInventory().clear();
-									block.removeMetadata("ownerPlayer", plugin);
-									block.setMetadata("ownerVillage", new FixedMetadataValue(plugin, pd.getVillage()));
+									chest.getPersistentDataContainer().remove(ownerPlayerKey);
+									chest.getPersistentDataContainer().set(ownerVillageKey, PersistentDataType.INTEGER,
+											pd.getVillage());
+									chest.update();
 									return;
-									
-								} else if (block.hasMetadata("ownerVillage")) {
-									System.out.println(block.getMetadata("ownerVillage"));
-									int ownerVillage = block.getMetadata("ownerVillage").get(0).asInt();
+
+								} else if (chest.getPersistentDataContainer().has(ownerVillageKey)) {
+									int ownerVillage = chest.getPersistentDataContainer().get(ownerVillageKey,
+											PersistentDataType.INTEGER);
 									if (ownerVillage != pd.getVillage()) {
-										Chest chest = (Chest) block.getState();
 										chest.getInventory().clear();
-										block.setMetadata("ownerVillage", new FixedMetadataValue(plugin, pd.getVillage()));
+										chest.getPersistentDataContainer().set(ownerVillageKey,
+												PersistentDataType.INTEGER, pd.getVillage());
+										chest.update();
 									}
 								}
 							}
-							
-							
+
 						} else if (chunkOwnerVillage > 0 && chunkOwnerVillage != pd.getVillage()) {
 							event.setCancelled(true);
 							VillageData vd = plugin.villages.get(chunkOwnerVillage);
 							player.sendMessage(ChatColor.RED + "마을 [" + vd.getName() + "] 에서 소유 중인 청크입니다");
 							return;
 						}
-						
+
 						if (chunkOwnerPlayer == null && chunkOwnerVillage <= 0) {
-							if (block.getType().equals(Material.CHEST)) {
-								if (block.hasMetadata("ownerPlayer")) {
-									System.out.println(block.getMetadata("ownerPlayer"));
-									String ownerPlayer = block.getMetadata("ownerPlayer").get(0).asString();
-									if (!ownerPlayer.equals(player.getUniqueId().toString())) {
+							if (block.getState() instanceof Chest chest) {
+								NamespacedKey ownerPlayerKey = new NamespacedKey(plugin, "ownerPlayer");
+								NamespacedKey ownerVillageKey = new NamespacedKey(plugin, "ownerVillage");
+								if (chest.getPersistentDataContainer().has(ownerPlayerKey)) {
+									UUID ownerPlayer = UUID.fromString(chest.getPersistentDataContainer()
+											.get(ownerPlayerKey, PersistentDataType.STRING));
+									if (!ownerPlayer.equals(player.getUniqueId())) {
 										event.setCancelled(true);
-										PlayerData ownerPlayerData = plugin.players.get(UUID.fromString(ownerPlayer));
-										player.sendMessage(ChatColor.RED + ownerPlayerData.getUsername() + " 님이 소유 중인 상자입니다");
+										PlayerData ownerPlayerData = plugin.players.get(ownerPlayer);
+										player.sendMessage(
+												ChatColor.RED + ownerPlayerData.getUsername() + " 님이 소유 중인 상자입니다");
 										return;
 									}
 
-								} else if (block.hasMetadata("ownerVillage")) {
-									System.out.println(block.getMetadata("ownerVillage"));
-									int ownerVillage = block.getMetadata("ownerVillage").get(0).asInt();
-									if (pd.getVillage() != ownerVillage) {
+								} else if (chest.getPersistentDataContainer().has(ownerVillageKey)) {
+									int ownerVillage = chest.getPersistentDataContainer().get(ownerVillageKey,
+											PersistentDataType.INTEGER);
+									if (ownerVillage != pd.getVillage()) {
 										event.setCancelled(true);
 										VillageData vd = plugin.villages.get(ownerVillage);
 										if (vd == null) {
 											player.sendMessage(ChatColor.RED + "삭제된 마을에서 소유했던 상자입니다");
 
 										} else {
-											player.sendMessage(ChatColor.RED + "마을 [" + vd.getName() + "] 에서 소유 중인 상자입니다");
+											player.sendMessage(
+													ChatColor.RED + "마을 [" + vd.getName() + "] 에서 소유 중인 상자입니다");
 										}
 										return;
 									}
 								}
 							}
 						}
-						
+
 						break;
 					}
 				}
@@ -253,7 +291,7 @@ public class ChunkEvent implements Listener {
 	public void onInteractEntity(PlayerInteractEntityEvent event) {
 		if (event.isCancelled())
 			return;
-		
+
 		Player player = event.getPlayer();
 
 		MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");

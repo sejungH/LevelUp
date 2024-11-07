@@ -1,6 +1,5 @@
 package com.levelup.chunk;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -13,10 +12,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
-import com.levelup.LevelUpIcon;
-import com.levelup.money.MoneyController;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
+import com.levelup.village.VillageData;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MVWorldManager;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
@@ -45,35 +43,32 @@ public class ChunkCommand implements CommandExecutor {
 				if (args[0].equalsIgnoreCase("구매")) {
 
 					if (world.getAlias().equalsIgnoreCase("world")) {
-						Chunk chunk = player.getLocation().getChunk();
-
 						PlayerData pd = plugin.players.get(player.getUniqueId());
-						if (pd.getVillage() > 0) {
-							sender.sendMessage(ChatColor.RED + "마을에 가입되어 있는 경우 청크를 구매할 수 없습니다");
 
-						} else if (ChunkController.checkPlayerChunkByPlayer(plugin, player, chunk)
-								&& ChunkController.checkVillageChunkByPlayer(plugin, player, chunk)) {
+						Chunk chunk = player.getLocation().getChunk();
+						Chunk spawnChunk = world.getSpawnLocation().getChunk();
+						int distX = Math.abs(chunk.getX() - spawnChunk.getX());
+						int distZ = Math.abs(chunk.getZ() - spawnChunk.getZ());
 
-							if (!plugin.playerChunks.containsKey(player.getUniqueId()))
-								plugin.playerChunks.put(player.getUniqueId(), new ArrayList<Chunk>());
+						if (distX > 3 || distZ > 3) {
+							
+							if (pd.getVillage() > 0) {
+								VillageData vd = plugin.villages.get(pd.getVillage());
 
-							int price = (int) Math.round(ChunkController
-									.calculatePlayerChunkPrice(plugin.playerChunks.get(player.getUniqueId()).size()));
+								if (vd.getPresident().equals(player.getUniqueId())) {
+									ChunkController.purchaseChunkByVillage(plugin, player);
 
-							if (pd.getBalance() >= price) {
-								MoneyController.withdrawMoeny(plugin, price, player.getUniqueId());
-								ChunkController.addPlayerChunk(plugin, player, chunk);
-								ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.GREEN, 5);
-								sender.sendMessage(ChatColor.GREEN + "청크를 성공적으로 구매했습니다  " + ChatColor.RESET
-										+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
-								player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+								} else {
+									sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다");
+								}
 
 							} else {
-								sender.sendMessage(ChatColor.RED + "청크를 구매할 소지금이 부족합니다  " + ChatColor.RESET
-										+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
+								ChunkController.purchaseChunkByPlayer(plugin, player);
 							}
+						} else {
+							sender.sendMessage(ChatColor.RED + "정거장 근처의 청크는 구매할 수 없습니다");
 						}
-						
+
 					} else {
 						player.sendMessage(ChatColor.RED + "이 월드에서는 실행할 수 없습니다");
 					}
@@ -81,27 +76,20 @@ public class ChunkCommand implements CommandExecutor {
 				} else if (args[0].equalsIgnoreCase("판매")) {
 
 					if (world.getAlias().equalsIgnoreCase("world")) {
+						PlayerData pd = plugin.players.get(player.getUniqueId());
 
-						if (plugin.playerChunks.containsKey(player.getUniqueId())) {
-							List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
-							Chunk chunk = player.getLocation().getChunk();
+						if (pd.getVillage() > 0) {
+							VillageData vd = plugin.villages.get(pd.getVillage());
 
-							if (chunks.contains(chunk)) {
-								int price = (int) Math
-										.round(ChunkController.calculatePlayerChunkPrice(chunks.size() - 1));
-								MoneyController.depoistMoeny(plugin, price, player.getUniqueId());
-								ChunkController.deletePlayerChunk(plugin, player.getUniqueId(), chunk);
-								ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.RED, 2);
-								sender.sendMessage(ChatColor.GREEN + "청크를 성공적으로 판매했습니다  " + ChatColor.RESET
-										+ LevelUpIcon.COIN.val() + ChatColor.GOLD + " " + price);
-								player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+							if (vd.getPresident().equals(player.getUniqueId())) {
+								ChunkController.saleChunkByVillage(plugin, player);
 
 							} else {
-								sender.sendMessage(ChatColor.RED + "소유 중인 청크가 아닙니다");
+								sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다");
 							}
 
 						} else {
-							sender.sendMessage(ChatColor.RED + "소유 중인 청크가 아닙니다");
+							ChunkController.saleChunkByPlayer(plugin, player);
 						}
 
 					} else {
@@ -111,64 +99,25 @@ public class ChunkCommand implements CommandExecutor {
 				} else if (args[0].equalsIgnoreCase("확인")) {
 
 					if (world.getAlias().equalsIgnoreCase("world")) {
+						PlayerData pd = plugin.players.get(player.getUniqueId());
 
-						if (plugin.playerChunks.containsKey(player.getUniqueId())) {
-							List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
+						if (pd.getVillage() > 0) {
+							if (plugin.villageChunks.containsKey(pd.getVillage())) {
+								List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
 
-							for (Chunk chunk : chunks) {
-								ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.BLUE, 10);
-								player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+								for (Chunk c : chunks) {
+									ChunkController.displayVillageChunkBorder(plugin, player, c, Color.BLUE, 10);
+									player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+								}
+
+							} else {
+								sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
 							}
 
 						} else {
-							sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
-						}
 
-					} else {
-						player.sendMessage(ChatColor.RED + "이 월드에서는 실행할 수 없습니다");
-					}
-
-				} else if (args[0].equalsIgnoreCase("목록")) {
-
-					if (plugin.playerChunks.containsKey(player.getUniqueId())) {
-						List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
-
-						if (!chunks.isEmpty()) {
-							sender.sendMessage(ChatColor.GREEN + "------------ 청크 목록 ------------");
-							for (Chunk chunk : chunks) {
-								sender.sendMessage(ChatColor.GOLD + " - X: " + ChatColor.RESET + chunk.getX() * 16
-										+ ChatColor.GOLD + " / Z: " + ChatColor.RESET + chunk.getZ() * 16);
-							}
-							sender.sendMessage(ChatColor.GREEN + "-------------------------------");
-
-						} else {
-							sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
-						}
-
-					} else {
-						sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
-					}
-				} else {
-					sender.sendMessage(ChatColor.RED + "사용법: /청크 <구매/판매/확인/목록>");
-				}
-
-			} else if (args.length == 2 && sender.isOp()) {
-
-				if (args[0].equalsIgnoreCase("확인") && sender instanceof Player) {
-					Player player = (Player) sender;
-
-					MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager()
-							.getPlugin("Multiverse-Core");
-					MVWorldManager worldManager = core.getMVWorldManager();
-					MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
-					
-					if (world.getAlias().equalsIgnoreCase("world")) {
-
-						PlayerData pd = PlayerController.getPlayerData(plugin, args[1]);
-
-						if (pd != null) {
-							if (plugin.playerChunks.containsKey(pd.getUuid())) {
-								List<Chunk> chunks = plugin.playerChunks.get(pd.getUuid());
+							if (plugin.playerChunks.containsKey(player.getUniqueId())) {
+								List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
 
 								for (Chunk chunk : chunks) {
 									ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.BLUE, 10);
@@ -176,11 +125,8 @@ public class ChunkCommand implements CommandExecutor {
 								}
 
 							} else {
-								sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+								sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
 							}
-
-						} else {
-							sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다.");
 						}
 
 					} else {
@@ -189,11 +135,31 @@ public class ChunkCommand implements CommandExecutor {
 
 				} else if (args[0].equalsIgnoreCase("목록")) {
 
-					PlayerData pd = PlayerController.getPlayerData(plugin, args[1]);
+					PlayerData pd = plugin.players.get(player.getUniqueId());
 
-					if (pd != null) {
-						if (plugin.playerChunks.containsKey(pd.getUuid())) {
-							List<Chunk> chunks = plugin.playerChunks.get(pd.getUuid());
+					if (pd.getVillage() > 0) {
+						if (plugin.villageChunks.containsKey(pd.getVillage())) {
+							List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
+
+							if (!chunks.isEmpty()) {
+								sender.sendMessage(ChatColor.GREEN + "------------ 청크 목록 ------------");
+								for (Chunk c : chunks) {
+									sender.sendMessage(ChatColor.GOLD + " - X: " + ChatColor.RESET + c.getX() * 16
+											+ ChatColor.GOLD + " / Z: " + ChatColor.RESET + c.getZ() * 16);
+								}
+								sender.sendMessage(ChatColor.GREEN + "-------------------------------");
+
+							} else {
+								sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
+							}
+
+						} else {
+							sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
+						}
+
+					} else {
+						if (plugin.playerChunks.containsKey(player.getUniqueId())) {
+							List<Chunk> chunks = plugin.playerChunks.get(player.getUniqueId());
 
 							if (!chunks.isEmpty()) {
 								sender.sendMessage(ChatColor.GREEN + "------------ 청크 목록 ------------");
@@ -204,15 +170,111 @@ public class ChunkCommand implements CommandExecutor {
 								sender.sendMessage(ChatColor.GREEN + "-------------------------------");
 
 							} else {
-								sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+								sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
 							}
 
 						} else {
-							sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+							sender.sendMessage(ChatColor.RED + "소유 중인 청크가 없습니다");
+						}
+					}
+
+				} else {
+					sender.sendMessage(ChatColor.RED + "사용법: /청크 <구매/판매/확인/목록>");
+				}
+
+			} else if (args.length == 2 && sender.isOp()) {
+				String user = args[1];
+
+				if (args[0].equalsIgnoreCase("확인") && sender instanceof Player) {
+					Player player = (Player) sender;
+
+					MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager()
+							.getPlugin("Multiverse-Core");
+					MVWorldManager worldManager = core.getMVWorldManager();
+					MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
+
+					if (world.getAlias().equalsIgnoreCase("world")) {
+
+						PlayerData pd = PlayerController.getPlayerData(plugin, user);
+
+						if (pd != null) {
+
+							if (pd.getVillage() > 0) {
+								if (plugin.villageChunks.containsKey(pd.getVillage())) {
+									List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
+
+									for (Chunk c : chunks) {
+										ChunkController.displayVillageChunkBorder(plugin, player, c, Color.BLUE, 10);
+										player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+									}
+								}
+
+							} else {
+								if (plugin.playerChunks.containsKey(pd.getUuid())) {
+									List<Chunk> chunks = plugin.playerChunks.get(pd.getUuid());
+
+									for (Chunk chunk : chunks) {
+										ChunkController.displayPlayerChunkBorder(plugin, player, chunk, Color.BLUE, 10);
+										player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+									}
+
+								} else {
+									sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+								}
+							}
+
+						} else {
+							sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다");
 						}
 
 					} else {
-						sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다.");
+						player.sendMessage(ChatColor.RED + "이 월드에서는 실행할 수 없습니다");
+					}
+
+				} else if (args[0].equalsIgnoreCase("목록")) {
+
+					PlayerData pd = PlayerController.getPlayerData(plugin, user);
+
+					if (pd != null) {
+
+						if (pd.getVillage() > 0) {
+							if (plugin.villageChunks.containsKey(pd.getVillage())) {
+								List<Chunk> chunks = plugin.villageChunks.get(pd.getVillage());
+
+								if (!chunks.isEmpty()) {
+									sender.sendMessage(ChatColor.GREEN + "------------ 청크 목록 ------------");
+									for (Chunk c : chunks) {
+										sender.sendMessage(ChatColor.GOLD + " - X: " + ChatColor.RESET + c.getX() * 16
+												+ ChatColor.GOLD + " / Z: " + ChatColor.RESET + c.getZ() * 16);
+									}
+									sender.sendMessage(ChatColor.GREEN + "-------------------------------");
+								}
+							}
+
+						} else {
+							if (plugin.playerChunks.containsKey(pd.getUuid())) {
+								List<Chunk> chunks = plugin.playerChunks.get(pd.getUuid());
+
+								if (!chunks.isEmpty()) {
+									sender.sendMessage(ChatColor.GREEN + "------------ 청크 목록 ------------");
+									for (Chunk chunk : chunks) {
+										sender.sendMessage(ChatColor.GOLD + " - X: " + ChatColor.RESET
+												+ chunk.getX() * 16 + ChatColor.GOLD + " / Z: " + ChatColor.RESET
+												+ chunk.getZ() * 16);
+									}
+									sender.sendMessage(ChatColor.GREEN + "-------------------------------");
+
+								} else {
+									sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+								}
+
+							} else {
+								sender.sendMessage(ChatColor.RED + args[1] + " 님이 소유 중인 청크가 없습니다");
+							}
+						}
+
+					} else {
+						sender.sendMessage(ChatColor.RED + args[1] + " 은(는) 존재하지 않는 유저입니다");
 					}
 
 				} else {
@@ -223,7 +285,9 @@ public class ChunkCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "사용법: /청크 <구매/판매/확인/목록>");
 			}
 
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			e.printStackTrace();
 			return false;
 		}

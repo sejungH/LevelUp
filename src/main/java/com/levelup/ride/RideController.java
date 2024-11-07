@@ -15,7 +15,6 @@ import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
 
 import dev.lone.itemsadder.api.CustomStack;
-import io.lumine.mythic.api.mobs.entities.MythicEntityType;
 import io.lumine.mythic.api.skills.Skill;
 import io.lumine.mythic.api.skills.SkillMetadata;
 import io.lumine.mythic.api.skills.SkillTrigger;
@@ -67,8 +66,10 @@ public class RideController {
 
 	public static void removeAllVehicles() {
 		for (ActiveMob mob : MythicBukkit.inst().getMobManager().getActiveMobs()) {
-			if (mob.getType().getEntityType().equals(MythicEntityType.PIG)) {
-				if (mob.getEntity().getPassengers().isEmpty()) {
+			if (mob.getType().getInternalName().contains("ride_")) {
+				if (mob.getEntity().getPassengers().isEmpty() && mob.getStance().equals("dismount")) {
+					System.out.println(
+							mob.getDisplayName() + " / " + mob.getType().getInternalName() + " / " + mob.getStance());
 					mob.remove();
 				}
 			}

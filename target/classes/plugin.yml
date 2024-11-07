@@ -10,13 +10,13 @@ commands:
     levelup:
         description: /levelup reload
     마을:
-        description: /마을 관련 명령어
+        description: 마을 관련 명령어
     친구:
-        description: /친구 관련 명령어
+        description: 친구 관련 명령어
     입금:
-        description: /입금 관련 명령어
+        description: 입금 관련 명령어
     출금:
-        description: /출금 관련 명령어
+        description: 출금 관련 명령어
     전체채팅:
         description: 채팅 모드 변경
     마을채팅:
@@ -27,6 +27,8 @@ commands:
         description: 채팅 모드 변경
     귓:
         description: 귓속말
+    차단:
+        description: 유저 차단
     ride:
         description: 탈것 관련 명령어
     bag:
@@ -41,3 +43,6 @@ commands:
         description: 청크 관련 명령어
     lvnpc:
         description: npc 관련 명령어
+    seasonpass:
+        description: 시즌패스 관련 명령어
+ 

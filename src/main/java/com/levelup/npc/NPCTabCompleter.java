@@ -10,6 +10,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import com.levelup.LevelUp;
+import com.levelup.npc.NPCController.NPCMythic;
 
 public class NPCTabCompleter implements TabCompleter {
 
@@ -32,11 +33,13 @@ public class NPCTabCompleter implements TabCompleter {
 
 					if (args[0].equalsIgnoreCase("spawn")) {
 
+						for (NPCMythic npc : NPCMythic.values()) {
+							list.add(npc.name());
+						}
+						
 						for (OfflinePlayer p : plugin.getServer().getOperators()) {
 							list.add(p.getName());
 						}
-						
-						list.add("BLACKSMITH");
 						
 						return list;
 					}

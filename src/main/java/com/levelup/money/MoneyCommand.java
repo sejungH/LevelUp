@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.levelup.LevelUp;
+import com.levelup.money.MoneyController.MoneyItem;
 import com.levelup.player.PlayerData;
 
 import dev.lone.itemsadder.api.CustomStack;
@@ -49,7 +50,7 @@ public class MoneyCommand implements CommandExecutor {
 							int amountCopper = amount % 10;
 
 							if (amount > pd.getBalance()) {
-								sender.sendMessage(ChatColor.RED + "출금 액수가 진고 액수보다 많을 수 없습니다.");
+								sender.sendMessage(ChatColor.RED + "출금 액수가 진고 액수보다 많을 수 없습니다");
 
 							} else {
 
@@ -98,24 +99,24 @@ public class MoneyCommand implements CommandExecutor {
 								}
 								
 								if (goldSlot && silverSlot && copperSlot) {
-									ItemStack gold = MoneyController.GOLD.getItemStack().clone();
+									ItemStack gold = MoneyItem.GOLD.getItemStack().clone();
 									gold.setAmount(amountGold);
 									player.getInventory().addItem(gold);
 
-									ItemStack silver = MoneyController.SILVER.getItemStack().clone();
+									ItemStack silver = MoneyItem.SILVER.getItemStack().clone();
 									silver.setAmount(amountSilver);
 									player.getInventory().addItem(silver);
 
-									ItemStack copper = MoneyController.COPPER.getItemStack().clone();
+									ItemStack copper = MoneyItem.COPPER.getItemStack().clone();
 									copper.setAmount(amountCopper);
 									player.getInventory().addItem(copper);
 
 									MoneyController.withdrawMoeny(plugin, amount, player.getUniqueId());
-									player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다.");
+									player.sendMessage(ChatColor.GOLD + "총 " + MoneyController.withLargeIntegers(amount) + " 코인을 출금했습니다");
 									player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
 									
 								} else {
-									sender.sendMessage(ChatColor.RED + "인벤토리에 공간이 충분하지 않습니다. 인벤토리를 비우고 다시 시도해주세요.");
+									sender.sendMessage(ChatColor.RED + "인벤토리에 공간이 충분하지 않습니다 인벤토리를 비우고 다시 시도해주세요.");
 								}
 
 							}
@@ -130,7 +131,7 @@ public class MoneyCommand implements CommandExecutor {
 				}
 
 			} else {
-				sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다.");
+				sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -149,17 +150,17 @@ public class MoneyCommand implements CommandExecutor {
 			} else {
 				CustomStack customStack = CustomStack.byItemStack(item);
 				if (customStack != null) {
-					if (customStack.getNamespacedID().equals(MoneyController.GOLD.getNamespacedID())) {
+					if (customStack.getNamespacedID().equals(MoneyItem.GOLD.getNamespacedID())) {
 						if (item.getAmount() + amountGold <= 64) {
 							countEmpty[0] += 1;
 						}
 
-					} else if (customStack.getNamespacedID().equals(MoneyController.SILVER.getNamespacedID())) {
+					} else if (customStack.getNamespacedID().equals(MoneyItem.SILVER.getNamespacedID())) {
 						if (item.getAmount() + amountSilver <= 64) {
 							countEmpty[1] += 1;
 						}
 
-					} else if (customStack.getNamespacedID().equals(MoneyController.COPPER.getNamespacedID())) {
+					} else if (customStack.getNamespacedID().equals(MoneyItem.COPPER.getNamespacedID())) {
 						if (item.getAmount() + amountCopper <= 64) {
 							countEmpty[2] += 1;
 						}

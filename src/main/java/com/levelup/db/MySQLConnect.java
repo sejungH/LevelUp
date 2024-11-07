@@ -37,7 +37,7 @@ public class MySQLConnect {
 				connection = DriverManager.getConnection(
 						"jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE + "?autoReconnect=true", USERNAME,
 						PASSWORD);
-				plugin.getLogger().info("데이터베이스에 정상적으로 연결되었습니다.");
+				plugin.getLogger().info("데이터베이스에 정상적으로 연결되었습니다");
 				return 0;
 			}
 		} catch (Exception e) {
@@ -68,7 +68,7 @@ public class MySQLConnect {
 	public int closeConnection() {
 		try {
 			connection.close();
-			plugin.getLogger().info("데이터베이스 연결이 종료되었습니다.");
+			plugin.getLogger().info("데이터베이스 연결이 종료되었습니다");
 
 			return 0;
 

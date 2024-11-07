@@ -1,0 +1,143 @@
+farmer_shop:
+  - material: "apple"
+    namespacedID: null
+    amount: 64
+    price: 1
+  - material: null
+    namespacedID: "customcrops:corn"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customcrops:hop"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customcrops:pepper"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customcrops:chinese_cabbage"
+    amount: 48
+    price: 1
+  - material: null
+    namespacedID: "customcrops:pineapple"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customcrops:garlic"
+    amount: 64
+    price: 1
+  - material: null
+    namespacedID: "customcrops:grape"
+    amount: 48
+    price: 1
+  - material: null
+    namespacedID: "customcrops:cabbage"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customcrops:eggplant"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customcrops:tomato"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customcrops:pitaya"
+    amount: 64
+    price: 1
+
+fishing_shop:
+  - material: null
+    namespacedID: "customfishing:radioactive_fish"
+    amount: 64
+    price: 1
+  - material: "cod"
+    namespacedID: null
+    amount: 32
+    price: 1
+  - material: "salmon"
+    namespacedID: null
+    amount: 32
+    price: 1
+  - material: "pufferfish"
+    namespacedID: null
+    amount: 32
+    price: 1
+  - material: "tropical_fish"
+    namespacedID: null
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customfishing:salmon_void_fish"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customfishing:woodskip_fish"
+    amount: 32
+    price: 1
+  - material: null
+    namespacedID: "customfishing:carp_fish"
+    amount: 24
+    price: 1
+  - material: null
+    namespacedID: "customfishing:red_snapper_fish"
+    amount: 24
+    price: 1
+  - material: null
+    namespacedID: "customfishing:tuna_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:pike_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:perch_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:mullet_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:sunfish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:cat_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:sardine_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:blue_jellyfish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:pink_jellyfish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:gold_fish"
+    amount: 16
+    price: 1
+  - material: null
+    namespacedID: "customfishing:octopus"
+    amount: 8
+    price: 1
+  - material: null
+    namespacedID: "customfishing:squid"
+    amount: 8
+    price: 1
+  - material: null
+    namespacedID: "customfishing:sturgeon_fish"
+    amount: 2
+    price: 1
+  - material: null
+    namespacedID: "customfishing:rainbow_fish"
+    amount: 1
+    price: 1

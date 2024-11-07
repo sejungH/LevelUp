@@ -95,4 +95,9 @@ public class AxeData extends ToolAbstract {
 		return 0;
 	}
 
+	@Override
+	public ToolType getType() {
+		return ToolType.AXE;
+	}
+
 }

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.levelup.LevelUp;
 import com.levelup.LevelUpIcon;
@@ -28,6 +29,9 @@ import com.levelup.village.VillageData;
 import net.md_5.bungee.api.ChatColor;
 
 public class PlayerController {
+
+	public static Set<UUID> invinciblePlayers = new HashSet<UUID>();
+	public static Map<UUID, List<Integer>> playerScheduler = new HashMap<UUID, List<Integer>>();
 
 	public static Map<UUID, PlayerData> getPlayers(LevelUp plugin) throws SQLException {
 		Connection conn = plugin.mysql.getConnection();
@@ -68,7 +72,7 @@ public class PlayerController {
 		pstmt.setInt(3, 0);
 		pstmt.setObject(4, param);
 
-		plugin.getLogger().info("새로운 유저 [" + player.getName() + "] 을(를) 데이터베이스에 추가합니다.");
+		plugin.getLogger().info("새로운 유저 [" + player.getName() + "] 을(를) 데이터베이스에 추가합니다");
 
 		pstmt.executeUpdate();
 		pstmt.close();
@@ -87,7 +91,7 @@ public class PlayerController {
 		pstmt.executeUpdate();
 		pstmt.close();
 
-		plugin.getLogger().info("유저 [" + player.getName() + "] 의 닉네임이 변경되었습니다.");
+		plugin.getLogger().info("유저 [" + player.getName() + "] 의 닉네임이 변경되었습니다");
 
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 		pd.setUsername(player.getName());
@@ -220,5 +224,24 @@ public class PlayerController {
 				}
 			}
 		}
+	}
+
+	public static boolean hasItem(Player player, ItemStack item) {
+		if (player.getInventory().contains(item)) {
+			return true;
+		} else {
+			for (ItemStack armor : player.getInventory().getArmorContents()) {
+				if (armor != null && armor.isSimilar(item)) {
+					return true;
+				}
+			}
+
+			ItemStack offhand = player.getInventory().getItemInOffHand();
+			if (offhand != null && offhand.isSimilar(item)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

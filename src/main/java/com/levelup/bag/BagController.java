@@ -20,7 +20,7 @@ public class BagController {
 		List<String> bags = new ArrayList<String>();
 
 		for (String id : CustomStack.getNamespacedIdsInRegistry()) {
-			if (id.contains("bag_")) {
+			if (id.contains("_bag")) {
 				bags.add(id.substring(id.indexOf(":") + 1));
 			}
 		}

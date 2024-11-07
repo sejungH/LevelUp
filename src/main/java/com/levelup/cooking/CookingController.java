@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -58,6 +59,8 @@ public class CookingController {
 			Material.STRIPPED_MANGROVE_LOG, Material.STRIPPED_OAK_LOG, Material.STRIPPED_SPRUCE_LOG,
 			Material.CRIMSON_STEM, Material.WARPED_STEM, Material.STRIPPED_WARPED_STEM, Material.STRIPPED_CRIMSON_STEM);
 	protected static final ItemStack FAILURE = new ItemStack(Material.STRING);
+	
+	public static List<LevelUpItem> ingredients = new ArrayList<LevelUpItem>();
 
 	public static class Recipe {
 
@@ -101,7 +104,9 @@ public class CookingController {
 						: recipe.get("material").toString().toUpperCase();
 				String namespacedID = recipe.get("namespacedID") == null ? null : recipe.get("namespacedID").toString();
 				int amount = Integer.parseInt(recipe.get("amount").toString());
-				recipes.add(new LevelUpItem(material, namespacedID, amount));
+				LevelUpItem item = new LevelUpItem(material, namespacedID, amount);
+				recipes.add(item);
+				ingredients.add(item);
 			}
 
 			Map<String, Object> result = (Map<String, Object>) rw.get("result");
@@ -115,18 +120,19 @@ public class CookingController {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Map<String, List<LevelUpItem>> parseCookingIngredients(Map<String, Object> yaml) {
-		Map<String, List<LevelUpItem>> cookingIngredients = new HashMap<String, List<LevelUpItem>>();
+	public static Map<String, Map<LevelUpItem, LevelUpItem>> parseCookingIngredients(Map<String, Object> yaml) {
+		Map<String, Map<LevelUpItem, LevelUpItem>> cookingIngredients = new HashMap<String, Map<LevelUpItem, LevelUpItem>>();
 
 		for (String type : yaml.keySet()) {
-			List<LevelUpItem> ingredients = new ArrayList<LevelUpItem>();
+			Map<LevelUpItem, LevelUpItem> ingredients = new HashMap<LevelUpItem, LevelUpItem>();
 			for (Object ingredientObj : (List<Object>) yaml.get(type)) {
 				Map<String, Object> ingredient = (Map<String, Object>) ingredientObj;
 				String material = ingredient.get("material") == null ? null
 						: ingredient.get("material").toString().toUpperCase();
 				String namespacedID = ingredient.get("namespacedID") == null ? null
 						: ingredient.get("namespacedID").toString();
-				ingredients.add(new LevelUpItem(material, namespacedID, 1));
+				String result = ingredient.get("result") == null ? null : ingredient.get("result").toString();
+				ingredients.put(new LevelUpItem(material, namespacedID, 1), new LevelUpItem(null, result, 1));
 			}
 			cookingIngredients.put(type, ingredients);
 		}
@@ -251,183 +257,164 @@ public class CookingController {
 				}
 			}
 
-			Recipe recipe = CookingController.findMatchingRecipe(plugin, ingredients);
+			if (!ingredients.isEmpty()) {
+				Recipe recipe = CookingController.findMatchingRecipe(plugin, ingredients);
+				String[] stance = new String[1];
+				
+				Skill skill;
+				if (recipe != null) {
 
-			Skill skill;
-			if (recipe != null) {
+					for (LevelUpItem ri : recipe.getRecipe()) {
+						int amount = ri.getAmount();
 
-				for (LevelUpItem ri : recipe.getRecipe()) {
-					int amount = ri.getAmount();
+						for (Integer s : CookingController.POT_INGREDIENT) {
+							ItemStack ingredient = potInv.getItem(s);
 
+							if (ingredient != null && ((ri.getMaterial() != null
+									&& ingredient.getType() == Material.getMaterial(ri.getMaterial().toUpperCase()))
+									|| (ri.getNamespacedID() != null && CustomStack.byItemStack(ingredient) != null
+											&& CustomStack.byItemStack(ingredient).getNamespacedID()
+													.equals(ri.getNamespacedID())))) {
+
+								if (ingredient.getAmount() >= amount) {
+									ingredient.setAmount(ingredient.getAmount() - amount);
+									break;
+
+								} else {
+									amount -= ingredient.getAmount();
+									ingredient.setAmount(0);
+								}
+							}
+						}
+					}
+
+					if (Math.random() < 0.1) {
+						skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_perfect").orElse(null);
+						stance[0] = "perfect";
+					} else {
+						skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_success").orElse(null);
+						stance[0] = "success";
+					}
+
+				} else {
 					for (Integer s : CookingController.POT_INGREDIENT) {
 						ItemStack ingredient = potInv.getItem(s);
+						if (ingredient != null) {
+							ingredient.setAmount(ingredient.getAmount() - 1);
+						}
+					}
 
-						if (ingredient != null && ((ri.getMaterial() != null
-								&& ingredient.getType() == Material.getMaterial(ri.getMaterial().toUpperCase()))
-								|| (ri.getNamespacedID() != null && CustomStack.byItemStack(ingredient) != null
-										&& CustomStack.byItemStack(ingredient).getNamespacedID()
-												.equals(ri.getNamespacedID())))) {
+					skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_fail").orElse(null);
+					stance[0] = "fail";
 
-							if (ingredient.getAmount() >= amount) {
-								ingredient.setAmount(ingredient.getAmount() - amount);
-								break;
+				}
+
+				SkillMetadata sm = new SkillMetadataImpl(SkillTrigger.get("API"), potMob, new BukkitPlayer(player));
+				if (skill != null) {
+					skill.execute(sm);
+				}
+
+				fuel.setAmount(fuel.getAmount() - 1);
+
+				player.closeInventory();
+
+				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+					@Override
+					public void run() {
+						if (!entity.isDead()) {
+							ItemStack result;
+
+							if (recipe != null) {
+								if (recipe.getResult().getMaterial() != null) {
+									result = new ItemStack(Material.getMaterial(recipe.getResult().getMaterial()));
+								} else {
+									result = CustomStack.getInstance(recipe.getResult().getNamespacedID())
+											.getItemStack();
+								}
+								result.setAmount(recipe.getResult().getAmount());
 
 							} else {
-								amount -= ingredient.getAmount();
-								ingredient.setAmount(0);
+								result = CookingController.FAILURE;
 							}
-						}
-					}
-				}
 
-				if (Math.random() < 0.1) {
-					skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_perfect").orElse(null);
-				} else {
-					skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_success").orElse(null);
-				}
-
-			} else {
-				for (Integer s : CookingController.POT_INGREDIENT) {
-					ItemStack ingredient = potInv.getItem(s);
-					if (ingredient != null) {
-						ingredient.setAmount(ingredient.getAmount() - 1);
-					}
-				}
-
-				skill = MythicBukkit.inst().getSkillManager().getSkill("cooking_fail").orElse(null);
-
-			}
-
-			SkillMetadata sm = new SkillMetadataImpl(SkillTrigger.get("API"), potMob, new BukkitPlayer(player));
-			if (skill != null) {
-				skill.execute(sm);
-			}
-
-			fuel.setAmount(fuel.getAmount() - 1);
-
-			player.closeInventory();
-
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-
-				@Override
-				public void run() {
-					if (!entity.isDead()) {
-						ItemStack result;
-
-						if (recipe != null) {
-							if (recipe.getResult().getMaterial() != null) {
-								result = new ItemStack(Material.getMaterial(recipe.getResult().getMaterial()));
-							} else {
-								result = CustomStack.getInstance(recipe.getResult().getNamespacedID()).getItemStack();
+							if (stance[0].equals("perfect")) {
+								result.setAmount(2);
 							}
-							result.setAmount(recipe.getResult().getAmount());
 
-						} else {
-							result = CookingController.FAILURE;
+							Location loc = entity.getLocation();
+							loc.setY(loc.getY() + 1);
+							entity.getWorld().dropItem(loc, result);
 						}
-
-						if (potMob.getStance().equals("perfect")) {
-							result.setAmount(2);
-						}
-
-						entity.getWorld().dropItem(entity.getLocation(), result);
 					}
-				}
 
-			}, 20 * 11);
+				}, 20 * 11);
+			}
 		}
 
 	}
 
-	public static void chopIngredient(LevelUp plugin, Player player, ActiveMob mob) {
+	public static void chopIngredient(LevelUp plugin, Player player, Entity entity) {
 		ItemStack item = player.getInventory().getItemInMainHand();
 
+		SkillExecutor skillExecutor = MythicBukkit.inst().getSkillManager();
 		Skill skill = null;
-		for (Entry<String, List<LevelUpItem>> entry : plugin.cookingIngredients.entrySet()) {
+		LevelUpItem[] result = new LevelUpItem[1];
+		String[] rank = new String[1];
+		for (Entry<String, Map<LevelUpItem, LevelUpItem>> entry : plugin.cookingIngredients.entrySet()) {
+			LevelUpItem ingredient = new LevelUpItem(item);
+			if (ingredient.getNamespacedID() != null) {
+				if (ingredient.getNamespacedID().contains("_silver_star")) {
+					rank[0] = "silver";
+					ingredient.setNamespacedID(ingredient.getNamespacedID().split("_silver_star")[0]);
 
-			for (LevelUpItem ingredient : plugin.cookingIngredients.get(entry.getKey())) {
-
-				SkillExecutor skillExecutor = MythicBukkit.inst().getSkillManager();
-
-				if (CustomStack.byItemStack(item) != null) {
-
-					String namespacedID = CustomStack.byItemStack(item).getNamespacedID();
-
-					if (ingredient.getNamespacedID() != null && namespacedID.contains(ingredient.getNamespacedID())) {
-
-						if (entry.getKey().equals("meats")) {
-							skill = skillExecutor.getSkill("chopping_meat").orElse(null);
-
-						} else if (entry.getKey().equals("vegetables")) {
-
-							if (namespacedID.contains("silver_star")) {
-								skill = skillExecutor.getSkill("chopping_vegetable_silver").orElse(null);
-
-							} else if (namespacedID.contains("golden_star")) {
-								skill = skillExecutor.getSkill("chopping_vegetable_golden").orElse(null);
-
-							} else {
-								skill = skillExecutor.getSkill("chopping_vegetable_default").orElse(null);
-							}
-
-						} else if (entry.getKey().equals("fruits")) {
-
-							if (namespacedID.contains("silver_star")) {
-								skill = skillExecutor.getSkill("chopping_fruit_silver").orElse(null);
-
-							} else if (namespacedID.contains("golden_star")) {
-								skill = skillExecutor.getSkill("chopping_fruit_golden").orElse(null);
-
-							} else {
-								skill = skillExecutor.getSkill("chopping_fruit_default").orElse(null);
-							}
-
-						} else if (entry.getKey().equals("fishes")) {
-
-							if (namespacedID.contains("silver_star")) {
-								skill = skillExecutor.getSkill("chopping_fish_silver").orElse(null);
-
-							} else if (namespacedID.contains("golden_star")) {
-								skill = skillExecutor.getSkill("chopping_fish_golden").orElse(null);
-
-							} else {
-								skill = skillExecutor.getSkill("chopping_fish_default").orElse(null);
-							}
-
-						}
-
-						break;
-					}
-
-				} else {
-
-					if (ingredient.getMaterial() != null
-							&& item.getType().equals(Material.getMaterial(ingredient.getMaterial()))) {
-
-						if (entry.getKey().equals("meats")) {
-							skill = skillExecutor.getSkill("chopping_meat").orElse(null);
-
-						} else if (entry.getKey().equals("vegetables")) {
-							skill = skillExecutor.getSkill("chopping_vegetable_default").orElse(null);
-
-						} else if (entry.getKey().equals("fruits")) {
-							skill = skillExecutor.getSkill("chopping_fruit_default").orElse(null);
-
-						} else if (entry.getKey().equals("fishes")) {
-							skill = skillExecutor.getSkill("chopping_fish_default").orElse(null);
-
-						}
-						break;
-					}
+				} else if (ingredient.getNamespacedID().contains("_golden_star")) {
+					rank[0] = "golden";
+					ingredient.setNamespacedID(ingredient.getNamespacedID().split("_golden_star")[0]);
 				}
+			}
 
+			if (entry.getValue().containsKey(ingredient)) {
+				if (entry.getKey().equals("meats")) {
+					skill = skillExecutor.getSkill("chopping_meat").orElse(null);
+
+				} else if (entry.getKey().equals("vegetables")) {
+					skill = skillExecutor.getSkill("chopping_vegetable").orElse(null);
+
+				} else if (entry.getKey().equals("fruits")) {
+					skill = skillExecutor.getSkill("chopping_fruit").orElse(null);
+
+				} else if (entry.getKey().equals("fishes")) {
+					skill = skillExecutor.getSkill("chopping_fish").orElse(null);
+
+				}
+				result[0] = entry.getValue().get(ingredient);
+				break;
 			}
 		}
 
 		if (skill != null) {
 			item.setAmount(item.getAmount() - 1);
+			ActiveMob mob = MythicBukkit.inst().getMobManager().getMythicMobInstance(entity);
 			SkillMetadata sm = new SkillMetadataImpl(SkillTrigger.get("API"), mob, new BukkitPlayer(player));
 			skill.execute(sm);
+
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+				@Override
+				public void run() {
+					Location loc = entity.getLocation();
+
+					if (rank[0] == "silver")
+						result[0].setAmount(2);
+
+					else if (rank[0] == "golden")
+						result[0].setAmount(3);
+
+					entity.getWorld().dropItem(loc, result[0].getItemStack());
+				}
+				
+			}, 20);
 		}
 	}
 }

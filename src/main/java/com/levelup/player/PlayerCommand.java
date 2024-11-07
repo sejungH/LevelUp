@@ -60,14 +60,14 @@ public class PlayerCommand implements CommandExecutor {
 									sender.sendMessage(ChatColor.RED + "닉네임 " + args[1] + " 은(는) 이미 존재하는 이름입니다");
 								}
 							} else {
-								sender.sendMessage(ChatColor.RED + args[0] + " 은(는) 존재하지 않는 유저입니다.");
+								sender.sendMessage(ChatColor.RED + args[0] + " 은(는) 존재하지 않는 유저입니다");
 							}
 						} else {
 							sender.sendMessage(ChatColor.RED + "사용법: /nickname <유저> <닉네임>");
 						}
 
 					} else {
-						sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다.");
+						sender.sendMessage(ChatColor.RED + "이 명령어를 실행할 권한이 없습니다");
 					}
 				}
 			}

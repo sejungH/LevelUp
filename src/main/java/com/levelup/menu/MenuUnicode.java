@@ -14,13 +14,14 @@ public enum MenuUnicode {
 	TOOLBOX('\uEAC5'),
 	
 	BANK_HOME('\uEAD0'),
-	BANK_DEPOSIT('\uEAD1'),
-	BANK_WITHDRAW('\uEAD2'),
-	BANK_TAX('\uEAD3'),
+	BANK_ACCOUNT('\uEAD1'),
+	BANK_TAX('\uEAD2'),
+	BANK_DEPOSIT('\uEAD3'),
+	BANK_WITHDRAW('\uEAD4'),
 	
 	VILLAGE_HOME('\uEAE0'),
 	VILLAGE_MANAGE('\uEAE1'),
-	VILLAGE_INFO('\uEAE2'),
+	VILLAGE_APPLY('\uEAE2'),
 	
 	CALENDAR_HOME('\uEAF0'),
 	CALENDAR_SEASONPASS_1('\uEAF1'),
@@ -31,9 +32,8 @@ public enum MenuUnicode {
 	
 	FRIEND_HOME('\uEBA0'),
 	FRIEND_REQUEST('\uEBA1'),
-	FRIEND_LIST('\uEBA2'),
-	FRIEND_WAITING('\uEBA3'),
-	FRIEND_BLOCK('\uEBA4'),
+	FRIEND_BLOCK('\uEBA2'),
+	FRIEND_INFO('\uEBA3'),
 	
 	WARP_HOME('\uEBB0'),
 	WARP_VILLAGE('\uEBB1'),
@@ -46,8 +46,10 @@ public enum MenuUnicode {
 	NPC_2('\uEBE1'),
 	NPC_3('\uEBE2'),
 	TEXTBOX('\uEBE3'),
+	NPC_SHOP('\uEBE4'),
 	
-	COOKING_POT('\uEBF0');
+	COOKING_POT('\uEBF0'),
+	POST('\uEBF1');
 	
 	public final char code;
 

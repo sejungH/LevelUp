@@ -1,7 +1,10 @@
 package com.levelup.chat;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.UUID;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,16 +13,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import com.levelup.LevelUp;
 import com.levelup.player.PlayerData;
-import com.levelup.village.VillageData;
 
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
-import net.md_5.bungee.chat.ComponentSerializer;
 
 public class ChatEvent implements Listener {
 
@@ -35,68 +30,107 @@ public class ChatEvent implements Listener {
 		PlayerData pd = plugin.players.get(player.getUniqueId());
 
 		if (pd.getChatType() == ChatType.DEFAULT) {
-			event.setCancelled(true);
 
-			TextComponent displayName = new TextComponent(pd.getName());
-			String color;
-			if (pd.getNickname() != null && (color = pd.getNicknameColor()) != null) {
-				displayName.setColor(ChatColor.of(color));
+			String displayName = pd.getName();
+			if (pd.getNickname() != null && pd.getNicknameColor() != null) {
+				displayName = ChatColor.of(pd.getNicknameColor()) + displayName;
 			}
 
-			ArrayList<TextComponent> components = new ArrayList<TextComponent>();
-			TextComponent hoverMessage = new TextComponent(new ComponentBuilder(pd.getUsername()).create());
-			hoverMessage.addExtra(new TextComponent(ComponentSerializer.parse("{text: \"\n\"}")));
-			hoverMessage.addExtra(
-					new TextComponent(new ComponentBuilder("/귓 " + pd.getName()).color(ChatColor.GRAY).create()));
-			components.add(hoverMessage);
-			BaseComponent[] hoverToSend = (BaseComponent[]) components.toArray(new BaseComponent[components.size()]);
+			event.setMessage(RomanToKorean.RomToKor(event.getMessage()));
+			event.setFormat(displayName + ChatColor.of("#AAAAAA") + " : " + ChatColor.WHITE + event.getMessage());
 
-			displayName.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverToSend)));
-			displayName.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/귓 " + pd.getName() + " "));
-
-			TextComponent seperator = new TextComponent(" : ");
-			seperator.setColor(ChatColor.of("#AAAAAA"));
-
-			TextComponent message = new TextComponent(event.getMessage());
-
-			plugin.getServer().spigot().broadcast(new TextComponent(displayName, seperator, message));
-			plugin.getLogger().info(pd.getUsername() + " : " + event.getMessage());
+			for (Entry<UUID, List<UUID>> entry : plugin.userBlocks.entrySet()) {
+				if (entry.getValue().contains(player.getUniqueId())) {
+					OfflinePlayer op = plugin.getServer().getOfflinePlayer(entry.getKey());
+					if (op.isOnline()) {
+						event.getRecipients().remove((Player) op);
+					}
+				}
+			}
+			
+//			event.setCancelled(true);
+//
+//			TextComponent displayName = new TextComponent(pd.getName());
+//			String color;
+//			if (pd.getNickname() != null && (color = pd.getNicknameColor()) != null) {
+//				displayName.setColor(ChatColor.of(color));
+//			}
+//
+//			ArrayList<TextComponent> components = new ArrayList<TextComponent>();
+//			TextComponent hoverMessage = new TextComponent(new ComponentBuilder(pd.getUsername()).create());
+//			hoverMessage.addExtra(new TextComponent(ComponentSerializer.parse("{text: \"\n\"}")));
+//			hoverMessage.addExtra(
+//					new TextComponent(new ComponentBuilder("/귓 " + pd.getName()).color(ChatColor.GRAY).create()));
+//			components.add(hoverMessage);
+//			BaseComponent[] hoverToSend = (BaseComponent[]) components.toArray(new BaseComponent[components.size()]);
+//
+//			displayName.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverToSend)));
+//			displayName.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/귓 " + pd.getName() + " "));
+//
+//			TextComponent seperator = new TextComponent(" : ");
+//			seperator.setColor(ChatColor.of("#AAAAAA"));
+//
+//			TextComponent message = new TextComponent();
+//
+//			plugin.getServer().spigot().broadcast(new TextComponent(displayName, seperator, message));
+//			plugin.getLogger().info(pd.getUsername() + " : " + event.getMessage());
 
 		} else if (pd.getChatType() == ChatType.VILLAGE) {
-			event.setCancelled(true);
-
-			ChatColor color = ChatColor.of("#FFBCE1");
-
-			TextComponent displayName = new TextComponent("[마을채팅] " + pd.getName());
-			displayName.setColor(color);
-
-			ArrayList<TextComponent> components = new ArrayList<TextComponent>();
-			TextComponent hoverMessage = new TextComponent(new ComponentBuilder(pd.getUsername()).create());
-			hoverMessage.addExtra(new TextComponent(ComponentSerializer.parse("{text: \"\n\"}")));
-			hoverMessage.addExtra(
-					new TextComponent(new ComponentBuilder("/귓 " + pd.getName()).color(ChatColor.GRAY).create()));
-			components.add(hoverMessage);
-			BaseComponent[] hoverToSend = (BaseComponent[]) components.toArray(new BaseComponent[components.size()]);
-
-			displayName.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverToSend)));
-			displayName.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/귓 " + pd.getName() + " "));
-
-			TextComponent seperator = new TextComponent(" > ");
-			seperator.setColor(ChatColor.of("#AAAAAA"));
-
-			TextComponent message = new TextComponent(event.getMessage());
-			message.setColor(color);
+			event.setMessage(RomanToKorean.RomToKor(event.getMessage()));
+			event.setFormat(ChatColor.of("#FFBCE1") + "[마을채팅] " + pd.getName() + ChatColor.of("#AAAAAA") + " : "
+					+ ChatColor.of("#FFBCE1") + event.getMessage());
 
 			for (Player op : plugin.getServer().getOnlinePlayers()) {
 				PlayerData opd = plugin.players.get(op.getUniqueId());
 
-				if (pd.getVillage() == opd.getVillage()) {
-					op.spigot().sendMessage(new TextComponent(displayName, seperator, message));
+				if (pd.getVillage() != opd.getVillage()) {
+					event.getRecipients().remove((Player) op);
 				}
 			}
 
-			VillageData vd = plugin.villages.get(pd.getVillage());
-			plugin.getLogger().info("[" + vd.getName() + "] " + pd.getUsername() + " : " + event.getMessage());
+			for (Entry<UUID, List<UUID>> entry : plugin.userBlocks.entrySet()) {
+				if (entry.getValue().contains(player.getUniqueId())) {
+					OfflinePlayer op = plugin.getServer().getOfflinePlayer(entry.getKey());
+					if (op.isOnline() && event.getRecipients().contains((Player) op)) {
+						event.getRecipients().remove((Player) op);
+					}
+				}
+			}
+
+//			event.setCancelled(true);
+//
+//			ChatColor color = ChatColor.of("#FFBCE1");
+//
+//			TextComponent displayName = new TextComponent("[마을채팅] " + pd.getName());
+//			displayName.setColor(color);
+//
+//			ArrayList<TextComponent> components = new ArrayList<TextComponent>();
+//			TextComponent hoverMessage = new TextComponent(new ComponentBuilder(pd.getUsername()).create());
+//			hoverMessage.addExtra(new TextComponent(ComponentSerializer.parse("{text: \"\n\"}")));
+//			hoverMessage.addExtra(
+//					new TextComponent(new ComponentBuilder("/귓 " + pd.getName()).color(ChatColor.GRAY).create()));
+//			components.add(hoverMessage);
+//			BaseComponent[] hoverToSend = (BaseComponent[]) components.toArray(new BaseComponent[components.size()]);
+//
+//			displayName.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverToSend)));
+//			displayName.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/귓 " + pd.getName() + " "));
+//
+//			TextComponent seperator = new TextComponent(" : ");
+//			seperator.setColor(ChatColor.of("#AAAAAA"));
+//
+//			TextComponent message = new TextComponent(RomanToKorean.RomToKor(event.getMessage()));
+//			message.setColor(color);
+//
+//			for (Player op : plugin.getServer().getOnlinePlayers()) {
+//				PlayerData opd = plugin.players.get(op.getUniqueId());
+//
+//				if (pd.getVillage() == opd.getVillage()) {
+//					op.spigot().sendMessage(new TextComponent(displayName, seperator, message));
+//				}
+//			}
+//
+//			VillageData vd = plugin.villages.get(pd.getVillage());
+//			plugin.getLogger().info("[" + vd.getName() + "] " + pd.getUsername() + " : " + event.getMessage());
 		}
 	}
 
@@ -119,7 +153,7 @@ public class ChatEvent implements Listener {
 					}
 				}
 
-				ChatController.sendWhisper(plugin, player, args[1], message);
+				ChatController.sendWhisper(plugin, player, args[1], RomanToKorean.RomToKor(message));
 
 			} else {
 				player.sendMessage(ChatColor.RED + "사용법: /귓 <유저> <메세지>");

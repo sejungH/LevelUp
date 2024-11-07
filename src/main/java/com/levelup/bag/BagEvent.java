@@ -1,6 +1,8 @@
 package com.levelup.bag;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -46,7 +48,7 @@ public class BagEvent implements Listener {
 			CustomStack bag = CustomStack.byItemStack(event.getItem());
 			NamespacedKey ownerKey = new NamespacedKey(plugin, "owner");
 
-			if (bag != null && bag.getNamespacedID().contains("bag_")) {
+			if (bag != null && bag.getNamespacedID().contains("_bag")) {
 
 				ItemMeta meta = bag.getItemStack().getItemMeta();
 
@@ -82,7 +84,16 @@ public class BagEvent implements Listener {
 						player.sendMessage(ChatColor.RED + "본인 소유의 가방만 열 수 있습니다");
 					
 					}
-				}	
+					
+				} else {
+					List<String> lore = new ArrayList<String>();
+					lore.add(ChatColor.GRAY + "소유자: " + player.getName());
+					meta.setLore(lore);
+					meta.getPersistentDataContainer().set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
+					
+					event.getItem().setItemMeta(meta);
+					player.sendMessage(ChatColor.GREEN + "이 가방의 소유자로 등록되었습니다");
+				}
 			}
 		}
 	}
@@ -92,7 +103,7 @@ public class BagEvent implements Listener {
 		Player player = (Player) event.getPlayer();
 		CustomStack bag = CustomStack.byItemStack(player.getInventory().getItemInMainHand());
 
-		if (bag != null && bag.getNamespacedID().contains("bag_")
+		if (bag != null && bag.getNamespacedID().contains("_bag")
 				&& event.getView().getTitle().equalsIgnoreCase(ChatColor.stripColor(bag.getDisplayName()))) {
 			Inventory inv = event.getInventory();
 			Inventory ender = player.getEnderChest();
@@ -124,7 +135,7 @@ public class BagEvent implements Listener {
 		Player player = (Player) event.getWhoClicked();
 		CustomStack bag = CustomStack.byItemStack(player.getInventory().getItemInMainHand());
 
-		if (bag != null && bag.getNamespacedID().contains("bag_")
+		if (bag != null && bag.getNamespacedID().contains("_bag")
 				&& event.getView().getTitle().equalsIgnoreCase(ChatColor.stripColor(bag.getDisplayName()))) {
 			if (event.getCurrentItem() != null
 					&& event.getCurrentItem().equals(player.getInventory().getItemInMainHand())) {

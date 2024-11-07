@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.levelup.LevelUp;
+import com.levelup.npc.NPCController.NPCMythic;
 import com.levelup.tool.ToolType;
 
 import io.lumine.mythic.api.mobs.MythicMob;
@@ -35,13 +36,15 @@ public class NPCCommand implements CommandExecutor {
 		try {
 			if (sender instanceof Player) {
 				Player player = (Player) sender;
-				
+
 				if ((args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("spawn")) {
-					
+
 					if (sender.isOp()) {
-						if (args[1].equalsIgnoreCase("blacksmith")) {
-							MythicMob mythicMob = MythicBukkit.inst().getMobManager()
-									.getMythicMob(NPCController.BLACKSMITH).orElse(null);
+						if (NPCMythic.contains(args[1])) {
+							NPCMythic npcType = NPCMythic.valueOf(args[1].toUpperCase());
+							MythicMob mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(npcType.toString())
+									.orElse(null);
+							
 							if (mythicMob != null) {
 								ActiveMob mob = mythicMob.spawn(BukkitAdapter.adapt(player.getLocation()), 1);
 								LivingEntity entity = (LivingEntity) mob.getEntity().getBukkitEntity();
@@ -64,7 +67,7 @@ public class NPCCommand implements CommandExecutor {
 								entity.getPersistentDataContainer().set(npcKey, PersistentDataType.BOOLEAN, true);
 								NamespacedKey typeKey = new NamespacedKey(plugin, "levelup_npc_type");
 								entity.getPersistentDataContainer().set(typeKey, PersistentDataType.STRING,
-										"blacksmith");
+										npcType.name());
 							}
 
 						} else {
@@ -80,9 +83,10 @@ public class NPCCommand implements CommandExecutor {
 							npc.spawn(player.getLocation());
 						}
 					}
-					
+
 				} else if (args.length == 2 && args[0].equalsIgnoreCase("quest")) {
 					ToolType type = ToolType.get(args[1]);
+					NPCController.showBlankBefore(player);
 					NPCController.showQuestMessage(plugin, player, type);
 				}
 			}

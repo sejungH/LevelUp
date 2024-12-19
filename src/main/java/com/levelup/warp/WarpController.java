@@ -8,8 +8,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 import com.levelup.LevelUp;
+import com.onarandombox.MultiverseCore.MultiverseCore;
+import com.onarandombox.MultiverseCore.api.MVWorldManager;
+import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -38,6 +42,21 @@ public class WarpController {
 				} else {
 					player.teleport(loc);
 					Bukkit.getScheduler().cancelTask(task[0]);
+					warpingPlayers.remove(player.getUniqueId());
+					
+					MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+					MVWorldManager worldManager = core.getMVWorldManager();
+					MultiverseWorld world = worldManager.getMVWorld(loc.getWorld());
+					
+					if (world.getAlias().equalsIgnoreCase("spawn")) {
+						String command = String.format("effect give %s minecraft:speed infinite 1 true", player.getName());
+						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+						
+					} else {
+						if (player.hasPotionEffect(PotionEffectType.SPEED)) {
+							player.removePotionEffect(PotionEffectType.SPEED);
+						}
+					}
 				}
 
 				counter--;

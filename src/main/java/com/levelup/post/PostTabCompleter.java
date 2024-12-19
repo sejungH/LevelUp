@@ -1,4 +1,4 @@
-package com.levelup.bag;
+package com.levelup.post;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.bukkit.entity.Player;
 import com.levelup.LevelUp;
 import com.levelup.player.PlayerController;
 
-public class BagTabCompleter implements TabCompleter {
-	
+public class PostTabCompleter implements TabCompleter {
+
 	private LevelUp plugin;
-	
-	public BagTabCompleter(LevelUp plugin) {
+
+	public PostTabCompleter(LevelUp plugin) {
 		this.plugin = plugin;
 	}
 

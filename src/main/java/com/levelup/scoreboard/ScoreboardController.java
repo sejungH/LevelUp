@@ -64,6 +64,9 @@ public class ScoreboardController {
 
 		} else if (mvWorld.getAlias().equalsIgnoreCase("nether")) {
 			world = objective.getScore("  §f" + LevelUpIcon.WORLD.val() + " 지옥 월드");
+		
+		} else if (mvWorld.getAlias().equalsIgnoreCase("tutorial")) {
+			world = objective.getScore("  §f" + LevelUpIcon.WORLD.val() + " 튜토리얼");
 
 		} else {
 			world = objective.getScore("  §f" + LevelUpIcon.WORLD.val() + " 알 수 없음");

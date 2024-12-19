@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,8 +35,9 @@ public class MessageController {
 			int id = rs.getInt("id");
 			UUID uuid = UUID.fromString(rs.getString("uuid"));
 			String message = rs.getString("message");
-			LocalDateTime datetime = LocalDateTime.parse(rs.getString("datetime"));
-			boolean isRead = rs.getInt("id_read") == 0 ? false : true;
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime datetime = LocalDateTime.parse(rs.getString("datetime"), formatter);
+			boolean isRead = rs.getInt("is_read") == 0 ? false : true;
 
 			pendingMessages.add(new Message(id, uuid, message, datetime, isRead));
 		}
@@ -48,13 +51,22 @@ public class MessageController {
 	public static void addPendingMessage(LevelUp plugin, UUID uuid, String message) throws SQLException {
 		Connection conn = plugin.mysql.getConnection();
 		String sql = "INSERT INTO message (uuid, message) VALUES (?, ?)";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
+		PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
 		pstmt.setString(1, uuid.toString());
 		pstmt.setString(2, message);
-
 		pstmt.executeUpdate();
+		
+		ResultSet rs = pstmt.getGeneratedKeys();
+		
+		if (rs.next()) {
+			int id = rs.getInt(1);
+			pendingMessages.add(new Message(id, uuid, message, LocalDateTime.now(), false));
+		}
+		rs.close();
 		pstmt.close();
+		
+		
 	}
 
 	public static void readMessage(LevelUp plugin, int id) throws SQLException {
@@ -65,6 +77,13 @@ public class MessageController {
 		pstmt.setInt(1, id);
 		pstmt.executeUpdate();
 		pstmt.close();
+		
+		for (Message msg : pendingMessages) {
+			if (msg.getId() == id) {
+				msg.setRead(true);
+				break;
+			}
+		}
 	}
 
 	public static List<Message> getPlayerMessages(UUID uuid) {
@@ -85,7 +104,7 @@ public class MessageController {
 			((Player) player).playSound((Player) player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
 		} else {
 			try {
-				addPendingMessage(plugin, uuid, message);
+				addPendingMessage(plugin, uuid, LevelUpIcon.MAIL + " " + ChatColor.GOLD + message);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -95,7 +114,7 @@ public class MessageController {
 	public static void sendPendingMessages(LevelUp plugin, Player player) throws SQLException {
 		List<Message> messages = MessageController.getPlayerMessages(player.getUniqueId());
 		for (Message msg : messages) {
-			player.sendMessage(LevelUpIcon.MAIL + " " + ChatColor.GOLD + msg.getMessage());
+			player.sendMessage(msg.getMessage());
 			readMessage(plugin, msg.getId());
 		}
 	}

@@ -1,164 +1,183 @@
 package com.levelup.post;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.levelup.LevelUp;
-import com.levelup.LevelUpItem;
-import com.levelup.menu.MenuController;
-import com.levelup.menu.MenuIcon;
-import com.levelup.menu.MenuUnicode;
+import com.levelup.LevelUpIcon;
 import com.levelup.message.MessageController;
+import com.levelup.player.PlayerData;
 
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import net.md_5.bungee.api.ChatColor;
 
 public class PostController {
 
 	public static final String POSTBOX = "customitems:postbox";
-	public static Map<UUID, JsonArray> postItems;
 
-	public static void getPostItems(LevelUp plugin) throws SQLException {
-		Connection conn = plugin.mysql.getConnection();
-		Map<UUID, JsonArray> postItems = new HashMap<UUID, JsonArray>();
+	public static Inventory getPostInventory(LevelUp plugin, UUID uuid) {
+		PlayerData pd = plugin.players.get(uuid);
+		Inventory postInv = Bukkit.createInventory(null, 54, ChatColor.WHITE
+				+ Character.toString(LevelUpIcon.POST.val()) + ChatColor.RESET + " " + pd.getName() + " 님의 우편함");
 
-		String sql = "SELECT * FROM post";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		ResultSet rs = pstmt.executeQuery();
+		OfflinePlayer user = plugin.getServer().getOfflinePlayer(uuid);
 
-		while (rs.next()) {
-			UUID uuid = UUID.fromString(rs.getString("uuid"));
-			JsonArray items = JsonParser.parseString(rs.getString("items")).getAsJsonArray();
-			postItems.put(uuid, items);
-		}
-
-		rs.close();
-		pstmt.close();
-
-		PostController.postItems = postItems;
-	}
-
-	public static void initPostItem(LevelUp plugin, UUID uuid) throws SQLException {
-		Connection conn = plugin.mysql.getConnection();
-		JsonArray jsonArray = new JsonArray();
-		String sql = "INSERT INTO post (uuid, items) VALUES (?, ?)";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		pstmt.setString(1, uuid.toString());
-		pstmt.setString(2, jsonArray.toString());
-		pstmt.executeUpdate();
-		pstmt.close();
-
-		postItems.put(uuid, jsonArray);
-	}
-
-	public static void addPostItem(LevelUp plugin, UUID uuid, ItemStack item) throws SQLException {
-		JsonArray jsonArray = postItems.get(uuid);
-		JsonObject itemObject = convertItemToJson(item);
-		jsonArray.add(itemObject);
-
-		Connection conn = plugin.mysql.getConnection();
-		String sql = "UPDATE post SET items = ? WHERE uuid = ?";
-
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		pstmt.setString(1, jsonArray.toString());
-		pstmt.setString(2, uuid.toString());
-		pstmt.executeUpdate();
-		pstmt.close();
-	}
-
-	public static JsonObject convertItemToJson(ItemStack item) {
-		JsonObject jsonObject = new JsonObject();
-		LevelUpItem lvItem = new LevelUpItem(item);
-		jsonObject.add("item", lvItem.createItemJson());
-
-		ItemMeta itemMeta = item.getItemMeta();
-		if (!itemMeta.getPersistentDataContainer().isEmpty()) {
-			JsonObject nbtObject = new JsonObject();
-			for (NamespacedKey key : itemMeta.getPersistentDataContainer().getKeys()) {
-				String value = itemMeta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
-				nbtObject.addProperty("key", key.getKey());
-				nbtObject.addProperty("value", value);
+		if (user.isOnline()) {
+			Inventory ender = ((Player) user).getEnderChest();
+			if (ender.getItem(2) == null) {
+				ender.setItem(2, new ItemStack(Material.SHULKER_BOX));
+				ender.setItem(3, new ItemStack(Material.SHULKER_BOX));
 			}
-			jsonObject.add("nbt", nbtObject);
-		}
 
-		return jsonObject;
-	}
-
-	public static ItemStack convertJsonToItem(LevelUp plugin, JsonObject json) {
-		LevelUpItem item = new LevelUpItem(json.get("item").getAsJsonObject());
-		ItemStack itemStack = item.getItemStack();
-
-		if (json.has("nbt")) {
-			ItemMeta itemMeta = itemStack.getItemMeta();
-
-			for (JsonElement nbt : json.get("nbt").getAsJsonArray()) {
-				JsonObject nbtObj = nbt.getAsJsonObject();
-				NamespacedKey key = new NamespacedKey(plugin, nbtObj.get("key").toString());
-				String value = nbtObj.get("value").toString();
-				itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, value);
-			}
-			itemStack.setItemMeta(itemMeta);
-		}
-		return itemStack;
-	}
-
-	public static void alertPlayer(LevelUp plugin, Player player) {
-		if (postItems.containsKey(player.getUniqueId())) {
-			MessageController.sendMessage(plugin, player.getUniqueId(), "우편함에 아이템이 도착했습니다!");
-		}
-	}
-
-	public static void openPostInventory(LevelUp plugin, Player player, int page) {
-		Inventory postInv = Bukkit.createInventory((InventoryHolder) player, 36,
-				MenuController.getInventoryTitle(MenuUnicode.POST.val()));
-
-		if (postItems.containsKey(player.getUniqueId())) {
-			JsonArray jsonArray = postItems.get(player.getUniqueId());
+			BlockStateMeta box1Meta = (BlockStateMeta) ender.getItem(2).getItemMeta();
+			BlockStateMeta box2Meta = (BlockStateMeta) ender.getItem(3).getItemMeta();
+			ShulkerBox box1 = (ShulkerBox) box1Meta.getBlockState();
+			ShulkerBox box2 = (ShulkerBox) box2Meta.getBlockState();
+			
 			for (int i = 0; i < 27; i++) {
-				int index = page * 27 + i;
-				if (jsonArray.size() <= index) {
-					break;
-				} else if (i == 26) {
-					ItemStack next = MenuIcon.NEXT.val().getItemStack();
-					ItemMeta nextIM = next.getItemMeta();
-					nextIM.setDisplayName(ChatColor.WHITE + "다음으로");
-					nextIM.getPersistentDataContainer().set(new NamespacedKey(plugin, "page"), PersistentDataType.INTEGER, page + 1);
-					next.setItemMeta(nextIM);
-					postInv.setItem(MenuController.slot(3, 8), next);
+				postInv.setItem(i, box1.getInventory().getItem(i));
+				postInv.setItem(i + 27, box2.getInventory().getItem(i));
+			}
+
+		} else {
+			try {
+				File file = new File(LevelUp.CONFIG_PATH + "/post/" + uuid.toString() + ".nbt");
+				if (file.exists()) {
+					ReadWriteNBT nbt = NBT.readFile(file);
+					ItemStack[] items = NBT.itemStackArrayFromNBT(nbt);
+					for (int i = 0; i < 54; i++) {
+						postInv.setItem(i, items[i]);
+					}
 				}
-				postInv.setItem(i, convertJsonToItem(plugin, jsonArray.get(index).getAsJsonObject()));
+
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 
-		if (page > 0) {
-			ItemStack prev = MenuIcon.NEXT.val().getItemStack();
-			ItemMeta prevIM = prev.getItemMeta();
-			prevIM.setDisplayName(ChatColor.WHITE + "이전으로");
-			prevIM.getPersistentDataContainer().set(new NamespacedKey(plugin, "page"), PersistentDataType.INTEGER, page - 1);
-			prev.setItemMeta(prevIM);
-			postInv.setItem(MenuController.slot(3, 8), prev);
+		return postInv;
+	}
+
+	public static void savePostInventory(Player player) {
+		try {
+			File directory = new File(LevelUp.CONFIG_PATH + "/post");
+			if (!directory.exists())
+				directory.mkdir();
+
+			File file = new File(directory, player.getUniqueId().toString() + ".nbt");
+
+			Inventory ender = player.getEnderChest();
+			if (ender.getItem(2) != null) {
+				BlockStateMeta box1Meta = (BlockStateMeta) ender.getItem(2).getItemMeta();
+				BlockStateMeta box2Meta = (BlockStateMeta) ender.getItem(3).getItemMeta();
+				ShulkerBox box1 = (ShulkerBox) box1Meta.getBlockState();
+				ShulkerBox box2 = (ShulkerBox) box2Meta.getBlockState();
+				ItemStack[] items = ArrayUtils.addAll(box1.getInventory().getContents(),
+						box2.getInventory().getContents());
+				ReadWriteNBT nbt = NBT.itemStackArrayToNBT(items);
+				NBT.writeFile(file, nbt);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void savePostInventory(UUID uuid, Inventory inv) {
+		try {
+			File directory = new File(LevelUp.CONFIG_PATH + "/post");
+			if (!directory.exists())
+				directory.mkdir();
+
+			File file = new File(directory, uuid.toString() + ".nbt");
+			ReadWriteNBT nbt = NBT.itemStackArrayToNBT(inv.getContents());
+			NBT.writeFile(file, nbt);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void restorePostInventory(Player player) {
+		try {
+			File file = new File(LevelUp.CONFIG_PATH + "/post/" + player.getUniqueId().toString() + ".nbt");
+			if (file.exists()) {
+				Inventory ender = player.getEnderChest();
+
+				if (ender.getItem(2) == null) {
+					ender.setItem(2, new ItemStack(Material.SHULKER_BOX));
+					ender.setItem(3, new ItemStack(Material.SHULKER_BOX));
+				}
+
+				BlockStateMeta box1Meta = (BlockStateMeta) ender.getItem(2).getItemMeta();
+				BlockStateMeta box2Meta = (BlockStateMeta) ender.getItem(3).getItemMeta();
+				ShulkerBox box1 = (ShulkerBox) box1Meta.getBlockState();
+				ShulkerBox box2 = (ShulkerBox) box2Meta.getBlockState();
+				box1.getInventory().clear();
+				box2.getInventory().clear();
+				
+				ReadWriteNBT nbt = NBT.readFile(file);
+				ItemStack[] items = NBT.itemStackArrayFromNBT(nbt);
+				
+				for (int i = 0; i < items.length; i++) {
+					if (i < 27) {
+						box1.getInventory().setItem(i, items[i]);
+					} else {
+						box2.getInventory().setItem(i - 27, items[i]);
+					}
+				}
+
+				box1Meta.setBlockState(box1);
+				box2Meta.setBlockState(box2);
+				
+				ender.getItem(2).setItemMeta(box1Meta);
+				ender.getItem(3).setItemMeta(box2Meta);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void alertPlayer(LevelUp plugin, UUID uuid) {
+		OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
+		if (player.isOnline()) {
+			((Player) player).sendMessage(LevelUpIcon.POST.val() + " " + ChatColor.GOLD + "우편함에 아이템이 도착했습니다!");
+			((Player) player).playSound((Player) player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+		} else {
+			try {
+				MessageController.addPendingMessage(plugin, uuid,
+						LevelUpIcon.POST.val() + " " + ChatColor.GOLD + "우편함에 아이템이 도착했습니다!");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static boolean hasAdditionalItems(Inventory first, Inventory second) {
+		for (ItemStack item : second.getContents()) {
+			if (item != null) {
+				if (!first.containsAtLeast(item, item.getAmount())) {
+					return true;
+				}
+			}
 		}
 		
-		player.openInventory(postInv);
+		return false;
 	}
 
 }

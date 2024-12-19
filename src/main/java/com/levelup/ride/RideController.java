@@ -68,8 +68,6 @@ public class RideController {
 		for (ActiveMob mob : MythicBukkit.inst().getMobManager().getActiveMobs()) {
 			if (mob.getType().getInternalName().contains("ride_")) {
 				if (mob.getEntity().getPassengers().isEmpty() && mob.getStance().equals("dismount")) {
-					System.out.println(
-							mob.getDisplayName() + " / " + mob.getType().getInternalName() + " / " + mob.getStance());
 					mob.remove();
 				}
 			}

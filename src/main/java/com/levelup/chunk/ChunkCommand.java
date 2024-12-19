@@ -285,9 +285,7 @@ public class ChunkCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "사용법: /청크 <구매/판매/확인/목록>");
 			}
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}

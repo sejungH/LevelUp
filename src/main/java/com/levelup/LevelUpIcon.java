@@ -14,9 +14,10 @@ public enum LevelUpIcon {
 	MAIL('\uECA9'),
 	ADMIN('\uECAA'),
 	WORLD('\uECAB'),
-
 	ONLINE('\uECAC'),
 	OFFLINE('\uECAD'),
+	POST('\uECAE'),
+	BAG('\uECB0'),
 	
 	// 캐시 도구 아이콘
 	NEKO('\uECC0'),

@@ -22,6 +22,8 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -107,12 +109,22 @@ public class LevelUpEvent implements Listener {
 		MVWorldManager worldManager = core.getMVWorldManager();
 		MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
 
-		if (world.getAlias().equalsIgnoreCase("spawn") || world.getAlias().equalsIgnoreCase("tutorial")) {
-			if (!player.isOp()) {
+		if (!player.isOp()) {
+			if (world.getAlias().equalsIgnoreCase("spawn") || world.getAlias().equalsIgnoreCase("tutorial")) {
 				Block placedOn = event.getBlockAgainst();
 				if (!(event.getBlock().getState() instanceof ShulkerBox
 						&& placedOn.getType() == LevelUpController.SHULKER_PLACEABLE)) {
 					event.setBuild(false);
+					event.setCancelled(true);
+				}
+			} else {
+				Chunk curr = event.getBlock().getChunk();
+				Chunk spawn = world.getSpawnLocation().getChunk();
+
+				int distX = Math.abs(curr.getX() - spawn.getX());
+				int distZ = Math.abs(curr.getZ() - spawn.getZ());
+
+				if (distX <= 3 && distZ <= 3) {
 					event.setCancelled(true);
 				}
 			}
@@ -200,6 +212,13 @@ public class LevelUpEvent implements Listener {
 	@EventHandler
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
 		if (event.getEntityType() == EntityType.WANDERING_TRADER) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onEnderOpen(InventoryOpenEvent event) {
+		if (!event.getPlayer().isOp() && event.getInventory().getType().equals(InventoryType.ENDER_CHEST)) {
 			event.setCancelled(true);
 		}
 	}

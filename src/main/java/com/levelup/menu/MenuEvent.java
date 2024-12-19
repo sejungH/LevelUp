@@ -946,7 +946,6 @@ public class MenuEvent implements Listener {
 		SeasonPass seasonPass = plugin.seasonPassData.get(player.getUniqueId());
 		if (seasonPass.getPosition() < seasonPass.getAvailable()) {
 			int frogPos = seasonPass.getPosition() % 5;
-			System.out.println("frogPos: " + frogPos);
 			ItemStack item;
 			if (frogPos == 0) {
 				Inventory nextPage = MenuController.getCalendarSeasonPassInventory(plugin, player, page + 1);

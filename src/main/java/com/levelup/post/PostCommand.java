@@ -1,4 +1,4 @@
-package com.levelup.bag;
+package com.levelup.post;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,11 +9,11 @@ import com.levelup.LevelUp;
 import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 
-public class BagCommand implements CommandExecutor {
-
+public class PostCommand implements CommandExecutor {
+	
 	private LevelUp plugin;
-
-	public BagCommand(LevelUp plugin) {
+	
+	public PostCommand(LevelUp plugin) {
 		this.plugin = plugin;
 	}
 
@@ -25,7 +25,7 @@ public class BagCommand implements CommandExecutor {
 					String name = args[0];
 					PlayerData pd = PlayerController.getPlayerData(plugin, name);
 					if (pd != null) {
-						player.openInventory(BagController.getBagInventory(plugin, pd.getUuid(), null, 4));
+						player.openInventory(PostController.getPostInventory(plugin, pd.getUuid()));
 					}
 				}
 			}
@@ -33,7 +33,6 @@ public class BagCommand implements CommandExecutor {
 			e.printStackTrace();
 			return false;
 		}
-
 		return true;
 	}
 

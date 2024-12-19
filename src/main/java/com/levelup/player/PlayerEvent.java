@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -34,9 +35,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 
 import com.levelup.LevelUp;
 import com.levelup.LevelUpIcon;
+import com.levelup.bag.BagController;
 import com.levelup.message.MessageController;
 import com.levelup.post.PostController;
 import com.levelup.scoreboard.ScoreboardController;
@@ -141,9 +144,6 @@ public class PlayerEvent implements Listener {
 		// Message
 		MessageController.sendPendingMessages(plugin, player);
 
-		// Post
-		PostController.alertPlayer(plugin, player);
-
 		// Invincible
 		PlayerController.invinciblePlayers.add(player.getUniqueId());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -154,6 +154,25 @@ public class PlayerEvent implements Listener {
 			}
 
 		}, tick * 20);
+		
+		// Spawn speed
+		MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+		MVWorldManager worldManager = core.getMVWorldManager();
+		MultiverseWorld world = worldManager.getMVWorld(player.getWorld());
+
+		if (world.getAlias().equalsIgnoreCase("spawn")) {
+			if (!player.hasPotionEffect(PotionEffectType.SPEED)) {
+				String command = String.format("effect give %s minecraft:speed infinite 1 true", player.getName());
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+			}
+		} else {
+			if (player.hasPotionEffect(PotionEffectType.SPEED)) {
+				player.removePotionEffect(PotionEffectType.SPEED);
+			}
+		}
+		
+		PostController.restorePostInventory(player);
+		BagController.restoreBagInventory(player);
 	}
 
 	@EventHandler
@@ -164,6 +183,8 @@ public class PlayerEvent implements Listener {
 		for (int taskId : PlayerController.playerScheduler.get(player.getUniqueId())) {
 			Bukkit.getScheduler().cancelTask(taskId);
 		}
+		PostController.savePostInventory(player);
+		BagController.saveBagInventory(player);
 	}
 
 	@EventHandler
@@ -241,6 +262,16 @@ public class PlayerEvent implements Listener {
 			}
 		}
 
+	}
+	
+	@EventHandler
+	public void onPlayerPickupItemEvent(EntityPickupItemEvent event) {
+		if (event.getEntity() instanceof Player) {
+			ItemStack item = event.getItem().getItemStack();
+			ItemMeta itemMeta = item.getItemMeta();
+			itemMeta.getPersistentDataContainer().remove(new NamespacedKey(plugin, "last_drop"));
+			item.setItemMeta(itemMeta);
+		}
 	}
 
 	@EventHandler

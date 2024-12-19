@@ -176,10 +176,10 @@ public class PlayerController {
 		pd.setNickname(nickname);
 	}
 
-	public static PlayerData getPlayerData(LevelUp plugin, String username) {
+	public static PlayerData getPlayerData(LevelUp plugin, String name) {
 		for (UUID uuid : plugin.players.keySet()) {
 			PlayerData pd = plugin.players.get(uuid);
-			if (pd.getUsername().equalsIgnoreCase(username) || pd.getName().equalsIgnoreCase(username)) {
+			if (pd.getUsername().equalsIgnoreCase(name) || pd.getName().equalsIgnoreCase(name)) {
 				return pd;
 			}
 		}

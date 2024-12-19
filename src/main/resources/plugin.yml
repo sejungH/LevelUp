@@ -45,4 +45,5 @@ commands:
         description: npc 관련 명령어
     seasonpass:
         description: 시즌패스 관련 명령어
- 
+    post:
+        description: 우편함 관련 명령어

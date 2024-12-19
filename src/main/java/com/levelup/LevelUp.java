@@ -53,8 +53,9 @@ import com.levelup.player.PlayerController;
 import com.levelup.player.PlayerData;
 import com.levelup.player.PlayerEvent;
 import com.levelup.player.PlayerTabCompleter;
-import com.levelup.post.PostController;
+import com.levelup.post.PostCommand;
 import com.levelup.post.PostEvent;
+import com.levelup.post.PostTabCompleter;
 import com.levelup.ride.RideCommand;
 import com.levelup.ride.RideEvent;
 import com.levelup.ride.RideTabCompleter;
@@ -78,6 +79,7 @@ import com.levelup.village.VillageEvent;
 import com.levelup.village.VillageTabCompleter;
 import com.levelup.warp.WarpEvent;
 
+import de.tr7zw.nbtapi.NBT;
 import net.md_5.bungee.api.ChatColor;
 
 public class LevelUp extends JavaPlugin {
@@ -126,6 +128,12 @@ public class LevelUp extends JavaPlugin {
 
 			if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
 				new LevelUpPlaceholders(this).register();
+			}
+			
+			if (!NBT.preloadApi()) {
+				getLogger().warning("NBT-API wasn't initialized properly, disabling the plugin");
+		        getPluginLoader().disablePlugin(this);
+		        return;
 			}
 
 			PluginDescriptionFile pdFile = this.getDescription();
@@ -196,6 +204,9 @@ public class LevelUp extends JavaPlugin {
 		
 		getCommand("seasonpass").setTabCompleter(new SeasonPassTabCompleter(this));
 		getCommand("seasonpass").setExecutor(new SeasonPassCommand(this));
+		
+		getCommand("post").setTabCompleter(new PostTabCompleter(this));
+		getCommand("post").setExecutor(new PostCommand(this));
 	}
 
 	public void initEvents() {
@@ -235,7 +246,6 @@ public class LevelUp extends JavaPlugin {
 		villageChunks = ChunkController.getVillageChunks(this);
 		seasonPassData = SeasonPassController.getSeasonPassData(this);
 		MessageController.getPendingMessages(this);
-		PostController.getPostItems(this);
 	}
 
 	public void initConfig() throws IOException {

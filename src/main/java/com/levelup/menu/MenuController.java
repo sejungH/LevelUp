@@ -216,6 +216,30 @@ public class MenuController {
 		ItemStack axeBtn = MenuIcon.BLANK.val().getItemStack().clone();
 		ItemMeta axeIM = axeBtn.getItemMeta();
 		axeIM.setDisplayName(ChatColor.WHITE + Character.toString(axeIcon.val()) + "도끼");
+		Map<Material, Integer> axeQuest = plugin.quests.get(player.getUniqueId()).get(ToolType.AXE);
+		if (!axeQuest.isEmpty()) {
+			List<String> axeLore = new ArrayList<String>();
+			int count = 0;
+			for (Entry<Material, Integer> q : axeQuest.entrySet()) {
+				Entry<Character, String> item = plugin.toolQuestItems.get(q.getKey());
+				String amount;
+				if (q.getValue() >= 64) {
+					amount = String.valueOf((int) (q.getValue() / 64)) + "세트";
+				} else {
+					amount = String.valueOf(q.getValue()) + '개';
+				}
+				if (count % 4 == 0) {
+					axeLore.add(ChatColor.WHITE + Character.toString(item.getKey()) + " " + ChatColor.GRAY
+							+ item.getValue() + " " + amount);
+				} else {
+					int index = count / 4;
+					axeLore.set(index, axeLore.get(index) + ", " + ChatColor.WHITE + Character.toString(item.getKey())
+							+ " " + ChatColor.GRAY + item.getValue() + " " + amount);
+				}
+				count++;
+			}
+			axeIM.setLore(axeLore);
+		}
 		axeBtn.setItemMeta(axeIM);
 		toolHomeInv.setItem(slot(3, 1), axeBtn);
 		toolHomeInv.setItem(slot(3, 2), axeBtn);
@@ -230,6 +254,30 @@ public class MenuController {
 		ItemStack swordBtn = MenuIcon.BLANK.val().getItemStack().clone();
 		ItemMeta swordIM = swordBtn.getItemMeta();
 		swordIM.setDisplayName(ChatColor.WHITE + Character.toString(swordIcon.val()) + "검");
+//		Map<Material, Integer> swordQuest = plugin.quests.get(player.getUniqueId()).get(ToolType.SWORD);
+//		if (!swordQuest.isEmpty()) {
+//			List<String> swordLore = new ArrayList<String>();
+//			int count = 0;
+//			for (Entry<Material, Integer> q : swordQuest.entrySet()) {
+//				Entry<Character, String> item = plugin.toolQuestItems.get(q.getKey());
+//				String amount;
+//				if (q.getValue() >= 64) {
+//					amount = String.valueOf((int) (q.getValue() / 64)) + "세트";
+//				} else {
+//					amount = String.valueOf(q.getValue()) + '개';
+//				}
+//				if (count % 4 == 0) {
+//					swordLore.add(ChatColor.WHITE + Character.toString(item.getKey()) + " " + ChatColor.GRAY
+//							+ item.getValue() + " " + amount);
+//				} else {
+//					int index = count / 4;
+//					swordLore.set(index, swordLore.get(index) + ", " + ChatColor.WHITE + Character.toString(item.getKey())
+//							+ " " + ChatColor.GRAY + item.getValue() + " " + amount);
+//				}
+//				count++;
+//			}
+//			swordIM.setLore(swordLore);
+//		}
 		swordBtn.setItemMeta(swordIM);
 		toolHomeInv.setItem(slot(0, 5), swordBtn);
 		toolHomeInv.setItem(slot(0, 6), swordBtn);
@@ -244,6 +292,30 @@ public class MenuController {
 		ItemStack shovelBtn = MenuIcon.BLANK.val().getItemStack().clone();
 		ItemMeta shovelIM = shovelBtn.getItemMeta();
 		shovelIM.setDisplayName(ChatColor.WHITE + Character.toString(shovelIcon.val()) + "삽");
+		Map<Material, Integer> shovelQuest = plugin.quests.get(player.getUniqueId()).get(ToolType.SWORD);
+		if (!shovelQuest.isEmpty()) {
+			List<String> shovelLore = new ArrayList<String>();
+			int count = 0;
+			for (Entry<Material, Integer> q : shovelQuest.entrySet()) {
+				Entry<Character, String> item = plugin.toolQuestItems.get(q.getKey());
+				String amount;
+				if (q.getValue() >= 64) {
+					amount = String.valueOf((int) (q.getValue() / 64)) + "세트";
+				} else {
+					amount = String.valueOf(q.getValue()) + '개';
+				}
+				if (count % 4 == 0) {
+					shovelLore.add(ChatColor.WHITE + Character.toString(item.getKey()) + " " + ChatColor.GRAY
+							+ item.getValue() + " " + amount);
+				} else {
+					int index = count / 4;
+					shovelLore.set(index, shovelLore.get(index) + ", " + ChatColor.WHITE + Character.toString(item.getKey())
+							+ " " + ChatColor.GRAY + item.getValue() + " " + amount);
+				}
+				count++;
+			}
+			shovelIM.setLore(shovelLore);
+		}
 		shovelBtn.setItemMeta(shovelIM);
 		toolHomeInv.setItem(slot(3, 5), shovelBtn);
 		toolHomeInv.setItem(slot(3, 6), shovelBtn);

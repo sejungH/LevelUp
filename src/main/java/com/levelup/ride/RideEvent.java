@@ -148,7 +148,6 @@ public class RideEvent implements Listener {
 				ActiveMob vehicleMob = MythicBukkit.inst().getMobManager().getMythicMobInstance(vehicle);
 				vehicle.addPassenger(player);
 				vehicleMob.setStance("mount");
-				System.out.println(vehicleMob.getStance());
 			}
 		}
 	}
@@ -162,7 +161,6 @@ public class RideEvent implements Listener {
 				ActiveMob vehicleMob = MythicBukkit.inst().getMobManager().getMythicMobInstance(vehicle);
 				vehicle.removePassenger(player);
 				vehicleMob.setStance("dismount");
-				System.out.println(vehicleMob.getStance());
 			}
 		}
 	}

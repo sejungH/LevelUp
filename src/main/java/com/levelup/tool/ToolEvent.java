@@ -71,7 +71,7 @@ public class ToolEvent implements Listener {
 		ToolController.boostBars = new HashMap<UUID, BossBar>();
 		ToolController.boostMults = new HashMap<UUID, Integer>();
 	}
-	
+
 	@EventHandler
 	public void onPlayerHeldTool(PlayerItemHeldEvent event) {
 		Player player = event.getPlayer();
@@ -79,19 +79,19 @@ public class ToolEvent implements Listener {
 		ItemStack curr = player.getInventory().getItem(event.getNewSlot());
 		ToolType prevType = prev == null ? null : ToolType.get(prev.getType());
 		ToolType currType = curr == null ? null : ToolType.get(curr.getType());
-		
+
 		if (prevType != null) {
 			BossBar bossBar = ToolController.updateBossBar(plugin, player, prevType);
 			if (bossBar.isVisible())
 				bossBar.setVisible(false);
 		}
-		
+
 		if (currType != null) {
 			BossBar bossBar = ToolController.updateBossBar(plugin, player, currType);
 			if (!bossBar.isVisible())
 				bossBar.setVisible(true);
 		}
-		
+
 		if (prevType == null && currType == null) {
 			for (BossBar bossBar : ToolController.bossBars.get(player.getUniqueId()).values()) {
 				if (bossBar.isVisible()) {
@@ -135,7 +135,7 @@ public class ToolEvent implements Listener {
 						"block_" + block.getX() + "_" + block.getY() + "_" + block.getZ());
 				if (chunk.getPersistentDataContainer().has(blockData)) {
 					chunk.getPersistentDataContainer().remove(blockData);
-					
+
 				} else {
 					int mult = ToolController.boostMults.get(player.getUniqueId());
 					tool.addExp(exp.get(block.getType()) * mult);
@@ -246,7 +246,7 @@ public class ToolEvent implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerClickToolInv(InventoryClickEvent event) throws SQLException {
+	public void onPlayerClickInv(InventoryClickEvent event) throws SQLException {
 		Player player = (Player) event.getWhoClicked();
 		ItemStack item = event.getCurrentItem();
 		ToolData toolData = plugin.tools.get(player.getUniqueId());
@@ -384,12 +384,12 @@ public class ToolEvent implements Listener {
 										}
 
 										newName = ChatController.gradient(newName, gradient);
-										
+
 									} else {
 										newName = ChatColor.stripColor(newName);
 									}
 
-									if (icon != null) 
+									if (icon != null)
 										newName = ChatColor.WHITE + Character.toString(icon.val()) + " " + newName;
 
 									ToolController.updateToolName(plugin, player.getUniqueId(), newName, type);
@@ -484,6 +484,5 @@ public class ToolEvent implements Listener {
 			event.setCancelled(true);
 		}
 	}
-
 
 }

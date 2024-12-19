@@ -43,7 +43,6 @@ public class LevelUpItem {
 		}
 
 		this.amount = item.getAmount();
-		
 	}
 
 	public LevelUpItem(@NonNull JsonObject object) {

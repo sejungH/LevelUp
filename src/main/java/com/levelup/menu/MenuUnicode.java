@@ -48,8 +48,7 @@ public enum MenuUnicode {
 	TEXTBOX('\uEBE3'),
 	NPC_SHOP('\uEBE4'),
 	
-	COOKING_POT('\uEBF0'),
-	POST('\uEBF1');
+	COOKING_POT('\uEBF0');
 	
 	public final char code;
 
